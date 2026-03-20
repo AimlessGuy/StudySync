@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StudySync.Views.VaultPage"
+             Title="My Vault">
+    <VerticalStackLayout Spacing="20" VerticalOptions="Center" HorizontalOptions="Center">
+        <Label Text="📚" FontSize="72"/>
+        <Label Text="Vault Page" FontSize="24" FontAttributes="Bold"/>
+        <Label Text="Phase 2 will show saved notes" TextColor="{DynamicResource Gray500}"/>
+        <Button Text="Back" Command="{Binding GoBackCommand}" WidthRequest="200"/>
+    </VerticalStackLayout>
+</ContentPage>

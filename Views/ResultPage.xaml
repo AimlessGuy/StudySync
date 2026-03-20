@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StudySync.Views.ResultPage"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             x:DataType="viewModels:ResultViewModel"
+             Title="Extracted Text"
+             BackgroundColor="{DynamicResource Background}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="16">
+
+            <!-- Captured Image -->
+            <Border BackgroundColor="{DynamicResource Gray200}"
+                    StrokeThickness="0"
+                    HeightRequest="200">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Image x:Name="CapturedImage"
+                       Aspect="AspectFit"
+                       Margin="10" />
+            </Border>
+
+            <!-- Processing Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsProcessing}"
+                               IsVisible="{Binding IsProcessing}"
+                               Color="{DynamicResource Primary}"
+                               HeightRequest="40" />
+
+            <!-- Extracted Text Area -->
+            <Border BackgroundColor="{DynamicResource White}"
+                    StrokeThickness="0"
+                    Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="📝 Extracted Text"
+                           TextColor="{DynamicResource Primary}"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+
+                    <Editor Text="{Binding ExtractedText}"
+                            AutoSize="TextChanges"
+                            BackgroundColor="{DynamicResource Gray100}"
+                            HeightRequest="200"
+                            FontSize="14"
+                            IsReadOnly="True"
+                            TextColor="Black" />
+                    <!-- Changed to Black -->
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*, *"
+                  ColumnSpacing="8"
+                  IsEnabled="{Binding IsTextExtracted}">
+
+                <Button Grid.Column="0"
+                        Text="💾 Save to Vault"
+                        Command="{Binding SaveNoteCommand}"
+                        BackgroundColor="{DynamicResource Primary}"
+                        CornerRadius="8" />
+
+                <Button Grid.Column="1"
+                        Text="📤 Share"
+                        Command="{Binding ShareNoteCommand}"
+                        BackgroundColor="{DynamicResource Secondary}"
+                        TextColor="{DynamicResource Gray900}"
+                        CornerRadius="8" />
+            </Grid>
+
+            <Button Text="🔄 Process Again"
+                    Command="{Binding ProcessAgainCommand}"
+                    BackgroundColor="{DynamicResource Gray500}"
+                    CornerRadius="8"
+                    IsEnabled="{Binding IsTextExtracted}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage> b

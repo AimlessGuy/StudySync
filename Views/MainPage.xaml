@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StudySync.Views.MainPage"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             xmlns:models="clr-namespace:StudySync.Models"
+             x:DataType="viewModels:MainViewModel"
+             Title="StudySync"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto"
+          Padding="16"
+          RowSpacing="8">
+
+        <!-- Header Border (unchanged) -->
+        <Border Grid.Row="0"
+                Padding="20"
+                BackgroundColor="{DynamicResource Primary}"
+                StrokeThickness="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="📚 Welcome to StudySync!"
+                       TextColor="White"
+                       FontSize="24"
+                       FontAttributes="Bold" />
+                <Label Text="Snap notes, extract text, and share with classmates"
+                       TextColor="White"
+                       FontSize="14" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Action Cards -->
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*, *"
+              Margin="0,16,0,16">
+
+            <!-- Camera Card -->
+            <Border Grid.Column="0"
+                    Margin="0,0,4,0"
+                    HeightRequest="140"
+                    BackgroundColor="{DynamicResource White}"
+                    StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <!-- Gesture moved to Border (already has background) -->
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoToCameraCommand}" />
+                </Border.GestureRecognizers>
+                <Grid>
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center">
+                        <Label Text="📸"
+                               FontSize="40"
+                               HorizontalOptions="Center" />
+                        <Label Text="Capture"
+                               TextColor="{DynamicResource Primary}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Vault Card -->
+            <Border Grid.Column="1"
+                    Margin="4,0,0,0"
+                    HeightRequest="140"
+                    BackgroundColor="{DynamicResource White}"
+                    StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoToVaultCommand}" />
+                </Border.GestureRecognizers>
+                <Grid>
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center">
+                        <Label Text="📚"
+                               FontSize="40"
+                               HorizontalOptions="Center" />
+                        <Label Text="My Vault"
+                               TextColor="{DynamicResource Primary}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding NoteCount, StringFormat='{0} notes'}"
+                               TextColor="{DynamicResource Gray500}"
+                               FontSize="12"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Recent Activity Header -->
+        <Label Grid.Row="2"
+               Text="Recent Activity"
+               FontSize="18"
+               FontAttributes="Bold"
+               Margin="0,8,0,0" />
+
+        <!-- Recent Notes List -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding RecentNotes}"
+                        Margin="0,8,0,0">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Spacing="8">
+                    <Label Text="📝"
+                           FontSize="48"
+                           HorizontalOptions="Center" />
+                    <Label Text="No notes yet"
+                           FontSize="16"
+                           HorizontalOptions="Center" />
+                    <Label Text="Tap the camera to capture"
+                           TextColor="{DynamicResource Gray500}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Note">
+                    <!-- Note item Border (already has background) -->
+                    <Border Margin="0,0,0,8"
+                            Padding="16"
+                            BackgroundColor="{DynamicResource White}"
+                            StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModels:MainViewModel}}, Path=SelectNoteCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Grid RowDefinitions="Auto, Auto, Auto"
+                              ColumnDefinitions="*, Auto"
+                              RowSpacing="4">
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding CourseCode}"
+                                   TextColor="{DynamicResource Primary}"
+                                   FontAttributes="Bold"
+                                   FontSize="16" />
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding TimeDisplay}"
+                                   TextColor="{DynamicResource Gray500}"
+                                   FontSize="12"
+                                   HorizontalOptions="End" />
+                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                   Text="{Binding PreviewText}"
+                                   MaxLines="2"
+                                   Margin="0,4,0,4"
+                                   LineBreakMode="TailTruncation" />
+                            <Label Grid.Row="2" Grid.Column="0"
+                                   Text="{Binding ContentType}"
+                                   TextColor="{DynamicResource Gray600}"
+                                   FontSize="12" />
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding IsShared, StringFormat='🌍 {0}'}"
+                                   TextColor="{DynamicResource Gray600}"
+                                   FontSize="12"
+                                   HorizontalOptions="End" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Bottom Navigation -->
+        <Border Grid.Row="4"
+                StrokeThickness="1"
+                Stroke="{DynamicResource Gray200}"
+                Padding="8"
+                Margin="0,8,0,0"
+                BackgroundColor="Transparent">
+            <!-- Ensure Border has background -->
+            <Grid ColumnDefinitions="*, *, *">
+
+                <!-- Home (inactive) -->
+                <VerticalStackLayout Grid.Column="0"
+                                     HorizontalOptions="Center"
+                                     Spacing="4">
+                    <Label Text="🏠"
+                           FontSize="24"
+                           HorizontalOptions="Center" />
+                    <Label Text="Home"
+                           TextColor="{DynamicResource Primary}"
+                           FontSize="12"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Camera -->
+                <VerticalStackLayout Grid.Column="1"
+                                     HorizontalOptions="Center"
+                                     Spacing="4"
+                                     BackgroundColor="Transparent">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToCameraCommand}" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Label Text="📸"
+                           FontSize="24"
+                           HorizontalOptions="Center" />
+                    <Label Text="Camera"
+                           TextColor="{DynamicResource Gray500}"
+                           FontSize="12"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Feed -->
+                <VerticalStackLayout Grid.Column="2"
+                                     HorizontalOptions="Center"
+                                     Spacing="4"
+                                     BackgroundColor="Transparent">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToFeedCommand}" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Label Text="📱"
+                           FontSize="24"
+                           HorizontalOptions="Center" />
+                    <Label Text="Feed"
+                           TextColor="{DynamicResource Gray500}"
+                           FontSize="12"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>
