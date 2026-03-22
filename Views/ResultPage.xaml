@@ -7,13 +7,16 @@
              Title="Extracted Text"
              BackgroundColor="{DynamicResource Background}">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="16" Padding="16">
+    <!-- Grid: image+progress fixed at top, text scrolls in middle, buttons pinned at bottom -->
+    <Grid RowDefinitions="Auto, *, Auto" Padding="16" RowSpacing="12">
+
+        <!-- TOP: Image + progress indicator -->
+        <VerticalStackLayout Grid.Row="0" Spacing="12">
 
             <!-- Captured Image -->
             <Border BackgroundColor="{DynamicResource Gray200}"
                     StrokeThickness="0"
-                    HeightRequest="200">
+                    HeightRequest="180">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="12" />
                 </Border.StrokeShape>
@@ -22,48 +25,65 @@
                        Margin="10" />
             </Border>
 
-            <!-- Processing Indicator -->
-            <ActivityIndicator IsRunning="{Binding IsProcessing}"
-                               IsVisible="{Binding IsProcessing}"
-                               Color="{DynamicResource Primary}"
-                               HeightRequest="40" />
+            <!-- OCR Progress (visible while processing) -->
+            <VerticalStackLayout Spacing="6"
+                                 IsVisible="{Binding IsProcessing}">
+                <Label Text="{Binding OcrStatus}"
+                       HorizontalOptions="Center"
+                       FontSize="13"
+                       TextColor="{DynamicResource Primary}" />
+                <ProgressBar Progress="{Binding OcrProgress}"
+                             ProgressColor="{DynamicResource Primary}"
+                             HeightRequest="8" />
+                <Label Text="{Binding OcrProgressPercent, StringFormat='{0}%'}"
+                       HorizontalOptions="Center"
+                       FontSize="12"
+                       TextColor="{DynamicResource Gray500}" />
+            </VerticalStackLayout>
 
-            <!-- Extracted Text Area -->
-            <Border BackgroundColor="{DynamicResource White}"
-                    StrokeThickness="0"
-                    Padding="16">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="12" />
-                </Border.StrokeShape>
+        </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="📝 Extracted Text"
-                           TextColor="{DynamicResource Primary}"
-                           FontSize="18"
-                           FontAttributes="Bold" />
+        <!-- MIDDLE: Scrollable extracted text — takes all remaining space -->
+        <Border Grid.Row="1"
+                BackgroundColor="{DynamicResource White}"
+                StrokeThickness="0"
+                Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
 
+            <Grid RowDefinitions="Auto, *">
+                <Label Grid.Row="0"
+                       Text="📝 Extracted Text"
+                       TextColor="{DynamicResource Primary}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       Margin="0,0,0,8" />
+
+                <!-- ScrollView here is bounded by the Grid row, so it actually scrolls -->
+                <ScrollView Grid.Row="1">
                     <Editor Text="{Binding ExtractedText}"
-                            AutoSize="TextChanges"
-                            BackgroundColor="{DynamicResource Gray100}"
-                            HeightRequest="200"
-                            FontSize="14"
-                            IsReadOnly="True"
-                            TextColor="Black" />
-                    <!-- Changed to Black -->
-                </VerticalStackLayout>
-            </Border>
+        BackgroundColor="{DynamicResource Gray100}"
+        HeightRequest="350"
+        FontSize="14"
+        IsReadOnly="True"
+        TextColor="Black" />
+                    
+                </ScrollView>
+            </Grid>
+        </Border>
 
-            <!-- Action Buttons -->
+        <!-- BOTTOM: Action buttons pinned at bottom -->
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+
             <Grid ColumnDefinitions="*, *"
                   ColumnSpacing="8"
                   IsEnabled="{Binding IsTextExtracted}">
-
                 <Button Grid.Column="0"
                         Text="💾 Save to Vault"
                         Command="{Binding SaveNoteCommand}"
                         BackgroundColor="{DynamicResource Primary}"
                         CornerRadius="8" />
-
                 <Button Grid.Column="1"
                         Text="📤 Share"
                         Command="{Binding ShareNoteCommand}"
@@ -79,5 +99,6 @@
                     IsEnabled="{Binding IsTextExtracted}" />
 
         </VerticalStackLayout>
-    </ScrollView>
-</ContentPage> b
+
+    </Grid>
+</ContentPage>

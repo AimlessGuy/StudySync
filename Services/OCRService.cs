@@ -24,33 +24,22 @@ namespace StudySync.Services
     public class OCRService
     {
 #if ANDROID
-        // ── Singleton recognizer: initialized once, reused on every call ──────────
         private static readonly Lazy<ITextRecognizer> _recognizer = new(() =>
         {
             var options = new TextRecognizerOptions.Builder().Build();
             return TextRecognition.GetClient(options);
         });
 
-        // ── Simple path-based result cache ────────────────────────────────────────
         private static readonly Dictionary<string, string> _cache = new();
 #endif
 
-        // ─────────────────────────────────────────────────────────────────────────
-        // Public warm-up: call this when your OCR page loads so the
-        // first real scan doesn't pay the cold-start cost.
-        // ─────────────────────────────────────────────────────────────────────────
         public static void WarmUp()
         {
 #if ANDROID
-            _ = _recognizer.Value; // Forces Lazy<T> to initialize the ML model
+            _ = _recognizer.Value;
 #endif
         }
 
-        // ─────────────────────────────────────────────────────────────────────────
-        // Main entry point
-        //   progress  – bind this to your ProgressBar / status label in the VM
-        //   ct        – pass a CancellationToken so the user can cancel mid-scan
-        // ─────────────────────────────────────────────────────────────────────────
         public async Task<string> RecognizeTextAsync(
             string imagePath,
             IProgress<OcrProgressUpdate>? progress = null,
@@ -59,8 +48,7 @@ namespace StudySync.Services
 #if ANDROID
             try
             {
-                // ── Step 1 – Cache check ─────────────────────────────────────────
-                Report(progress, 5, "Checking cache…");
+                Report(progress, 5, "Checking cache...");
                 if (_cache.TryGetValue(imagePath, out var cached))
                 {
                     Report(progress, 100, "Done!");
@@ -69,8 +57,8 @@ namespace StudySync.Services
 
                 ct.ThrowIfCancellationRequested();
 
-                // ── Step 2 – Load bitmap with calculated sample size ─────────────
-                Report(progress, 15, "Loading image…");
+                // ── Step 2 – Load at higher resolution for better accuracy ────────
+                Report(progress, 15, "Loading image...");
                 var bitmap = await LoadBitmapAsync(imagePath);
                 if (bitmap == null)
                     return "Could not load image.";
@@ -78,7 +66,7 @@ namespace StudySync.Services
                 ct.ThrowIfCancellationRequested();
 
                 // ── Step 3 – Fix EXIF rotation ───────────────────────────────────
-                Report(progress, 30, "Fixing orientation…");
+                Report(progress, 30, "Fixing orientation...");
                 int degrees = GetExifRotation(imagePath);
                 var rotated = RotateBitmap(bitmap, degrees);
                 if (!ReferenceEquals(rotated, bitmap))
@@ -90,61 +78,83 @@ namespace StudySync.Services
                 ct.ThrowIfCancellationRequested();
 
                 // ── Step 4 – Grayscale ───────────────────────────────────────────
-                Report(progress, 45, "Enhancing image…");
+                Report(progress, 40, "Enhancing image...");
                 var gray = ToGrayscale(rotated);
                 rotated.Recycle();
                 rotated.Dispose();
 
                 ct.ThrowIfCancellationRequested();
 
-                // ── Step 5 – Contrast boost ──────────────────────────────────────
-                var enhanced = IncreaseContrast(gray, contrast: 1.5f);
+                // ── Step 5 – Adaptive contrast based on image brightness ──────────
+                // Measures average brightness first, then picks the right boost.
+                // Dark images get a stronger lift; bright/washed-out images get less.
+                Report(progress, 50, "Adjusting contrast...");
+                float avgBrightness = GetAverageBrightness(gray);
+                float contrastAmount;
+                if (avgBrightness < 80f)
+                    contrastAmount = 2.0f;      // Dark image — strong boost
+                else if (avgBrightness < 150f)
+                    contrastAmount = 1.6f;      // Normal image — moderate boost
+                else
+                    contrastAmount = 1.2f;      // Already bright — gentle boost
+
+                var contrast = IncreaseContrast(gray, contrastAmount);
                 gray.Recycle();
                 gray.Dispose();
 
                 ct.ThrowIfCancellationRequested();
 
+                // ── Step 6 – Sharpen to make text edges crisper ──────────────────
+                Report(progress, 60, "Sharpening...");
+                var sharpened = Sharpen(contrast);
+                contrast.Recycle();
+                contrast.Dispose();
+
+                ct.ThrowIfCancellationRequested();
+
                 try
                 {
-                    // ── Step 6 – Build InputImage ────────────────────────────────
-                    Report(progress, 60, "Preparing for OCR…");
-                    // Rotation is already baked in from RotateBitmap, so pass 0 here
-                    var inputImage = InputImage.FromBitmap(enhanced, 0);
+                    Report(progress, 70, "Preparing for OCR...");
+                    var inputImage = InputImage.FromBitmap(sharpened, 0);
 
                     ct.ThrowIfCancellationRequested();
 
-                    // ── Step 7 – Run OCR ─────────────────────────────────────────
-                    Report(progress, 75, "Recognizing text…");
+                    Report(progress, 80, "Recognizing text...");
                     var result = await _recognizer.Value
                         .Process(inputImage)
                         .AsAsync<Java.Lang.Object>();
 
                     ct.ThrowIfCancellationRequested();
 
-                    // ── Step 8 – Extract text ────────────────────────────────────
-                    Report(progress, 90, "Extracting results…");
+                    Report(progress, 90, "Extracting results...");
                     string extractedText = string.Empty;
 
-                    if (result is IText textResult)
-                        extractedText = textResult.Text;
-                    else
-                        extractedText = result?.ToString() ?? string.Empty;
+                    var textObj = result?.JavaCast<Xamarin.Google.MLKit.Vision.Text.Text>();
+                    if (textObj?.TextBlocks != null && textObj.TextBlocks.Count > 0)
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        foreach (var block in textObj.TextBlocks)
+                        {
+                            if (!string.IsNullOrWhiteSpace(block.Text))
+                                sb.AppendLine(block.Text);
+                        }
+                        extractedText = sb.ToString().Trim();
+                    }
 
                     string finalText = string.IsNullOrWhiteSpace(extractedText)
                         ? "No text could be detected in this image."
-                        : extractedText.Trim();
+                        : extractedText;
 
-                    // ── Step 9 – Cache & return ──────────────────────────────────
                     _cache[imagePath] = finalText;
                     Report(progress, 100, "Done!");
                     return finalText;
                 }
                 finally
                 {
-                    if (!enhanced.IsRecycled)
+                    if (!sharpened.IsRecycled)
                     {
-                        enhanced.Recycle();
-                        enhanced.Dispose();
+                        sharpened.Recycle();
+                        sharpened.Dispose();
                     }
                 }
             }
@@ -161,16 +171,13 @@ namespace StudySync.Services
                 return $"Error processing image: {ex.Message}";
             }
 #else
-            Report(progress, 50, "Simulating OCR…");
+            Report(progress, 50, "Simulating OCR...");
             await Task.Delay(1000, ct);
             Report(progress, 100, "Done!");
             return "OCR is only available on Android.\n\nThis is placeholder text for other platforms.";
 #endif
         }
 
-        // ─────────────────────────────────────────────────────────────────────────
-        // Clears the in-memory cache (e.g. call after user deletes a scan)
-        // ─────────────────────────────────────────────────────────────────────────
         public static void ClearCache()
         {
 #if ANDROID
@@ -185,37 +192,28 @@ namespace StudySync.Services
 #endif
         }
 
-        // ─────────────────────────────────────────────────────────────────────────
-        // Private helpers
-        // ─────────────────────────────────────────────────────────────────────────
-
         private static void Report(IProgress<OcrProgressUpdate>? progress, int pct, string msg) =>
             progress?.Report(new OcrProgressUpdate { Percentage = pct, StatusMessage = msg });
 
 #if ANDROID
-        /// <summary>
-        /// Decodes the file with a dynamically calculated InSampleSize
-        /// so we never over- or under-sample the image.
-        /// </summary>
         private static async Task<Bitmap?> LoadBitmapAsync(string imagePath)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    // First pass – read dimensions only (very cheap, no pixel data)
                     var boundsOpts = new BitmapFactory.Options { InJustDecodeBounds = true };
                     BitmapFactory.DecodeFile(imagePath, boundsOpts);
 
-                    // Target ~1024px on the longest side for a good OCR/memory balance
-                    const int targetSize = 1024;
+                    // FIX 1: Increased from 1024 → 2048 for better accuracy on
+                    // handwritten notes. Higher res = more detail for ML Kit to work with.
+                    const int targetSize = 2048;
                     int sampleSize = 1;
                     int h = boundsOpts.OutHeight;
                     int w = boundsOpts.OutWidth;
                     while (h / sampleSize > targetSize || w / sampleSize > targetSize)
                         sampleSize *= 2;
 
-                    // Second pass – actually decode
                     var decodeOpts = new BitmapFactory.Options
                     {
                         InPreferredConfig = Bitmap.Config.Argb8888,
@@ -236,9 +234,6 @@ namespace StudySync.Services
             });
         }
 
-        /// <summary>
-        /// Reads EXIF orientation from the image file and returns degrees.
-        /// </summary>
         private static int GetExifRotation(string imagePath)
         {
             try
@@ -250,7 +245,7 @@ namespace StudySync.Services
 
                 return orientation switch
                 {
-                    (int)Android.Media.Orientation.Rotate90  => 90,
+                    (int)Android.Media.Orientation.Rotate90 => 90,
                     (int)Android.Media.Orientation.Rotate180 => 180,
                     (int)Android.Media.Orientation.Rotate270 => 270,
                     _ => 0
@@ -258,14 +253,10 @@ namespace StudySync.Services
             }
             catch
             {
-                return 0; // If EXIF can't be read, assume upright
+                return 0;
             }
         }
 
-        /// <summary>
-        /// Returns a rotation-corrected bitmap.
-        /// Returns the original reference unchanged when degrees == 0.
-        /// </summary>
         private static Bitmap RotateBitmap(Bitmap source, int degrees)
         {
             if (degrees == 0) return source;
@@ -274,9 +265,6 @@ namespace StudySync.Services
             return Bitmap.CreateBitmap(source, 0, 0, source.Width, source.Height, matrix, true);
         }
 
-        /// <summary>
-        /// Strips colour so ML Kit doesn't waste time on irrelevant channel data.
-        /// </summary>
         private static Bitmap ToGrayscale(Bitmap source)
         {
             var result = Bitmap.CreateBitmap(source.Width, source.Height, Bitmap.Config.Argb8888)!;
@@ -289,10 +277,33 @@ namespace StudySync.Services
             return result;
         }
 
-        /// <summary>
-        /// Boosts contrast to help ML Kit distinguish text from background.
-        /// contrast: 1.0 = unchanged, 1.5 = 50% boost (good default).
-        /// </summary>
+        // FIX 2: Measures average pixel brightness so we know how much
+        // contrast to apply. Samples every 10th pixel for speed.
+        private static float GetAverageBrightness(Bitmap source)
+        {
+            return Task.Run(() =>
+            {
+                int w = source.Width;
+                int h = source.Height;
+                long total = 0;
+                int count = 0;
+                int step = 10; // sample every 10th pixel
+
+                for (int y = 0; y < h; y += step)
+                {
+                    for (int x = 0; x < w; x += step)
+                    {
+                        var pixel = source.GetPixel(x, y);
+                        int r = Android.Graphics.Color.GetRedComponent(pixel);
+                        total += r; // grayscale so R=G=B
+                        count++;
+                    }
+                }
+
+                return count > 0 ? (float)total / count : 128f;
+            }).Result;
+        }
+
         private static Bitmap IncreaseContrast(Bitmap source, float contrast = 1.5f)
         {
             float t = (1f - contrast) / 2f * 255f;
@@ -308,6 +319,57 @@ namespace StudySync.Services
             var result = Bitmap.CreateBitmap(source.Width, source.Height, Bitmap.Config.Argb8888)!;
             new Canvas(result).DrawBitmap(source, 0, 0, paint);
             return result;
+        }
+
+        // FIX 3: Sharpening pass using a convolution kernel.
+        // Makes text edges crisper so ML Kit can distinguish letters better,
+        // especially for messy handwriting or slightly blurry photos.
+        private static Bitmap Sharpen(Bitmap source)
+        {
+            // Standard unsharp/sharpen kernel
+            var kernel = new float[]
+            {
+                 0f, -1f,  0f,
+                -1f,  5f, -1f,
+                 0f, -1f,  0f
+            };
+
+            var paint = new Android.Graphics.Paint();
+            paint.SetColorFilter(null);
+
+            var rs = Android.Renderscripts.RenderScript.Create(
+                Android.App.Application.Context);
+            try
+            {
+                var alloc = Android.Renderscripts.Allocation.CreateFromBitmap(rs, source)!;
+                var outAlloc = Android.Renderscripts.Allocation.CreateTyped(rs, alloc.Type)!;
+
+                var script = Android.Renderscripts.ScriptIntrinsicConvolve3x3
+                    .Create(rs, Android.Renderscripts.Element.U8_4(rs))!;
+
+                script.SetInput(alloc);
+                script.SetCoefficients(kernel);
+                script.ForEach(outAlloc);
+
+                var result = Bitmap.CreateBitmap(source.Width, source.Height, Bitmap.Config.Argb8888)!;
+                outAlloc.CopyTo(result);
+
+                alloc.Destroy();
+                outAlloc.Destroy();
+                script.Destroy();
+
+                return result;
+            }
+            catch
+            {
+                // If RenderScript fails (older devices), return original unchanged
+                rs?.Destroy();
+                return source;
+            }
+            finally
+            {
+                rs?.Destroy();
+            }
         }
 #endif
     }

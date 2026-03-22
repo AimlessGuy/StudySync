@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StudySync.Models;
 using StudySync.Services;
@@ -8,71 +6,68 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace StudySync.ViewModels;
 
-public class ResultViewModel // Note: removed ObservableObject inheritance
+public partial class ResultViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
     private readonly OCRService _ocrService;
     private readonly string _imagePath;
 
-    private string _extractedText;
-    private bool _isProcessing;
-    private bool _isTextExtracted;
-
+    private string _extractedText = string.Empty;
     public string ExtractedText
     {
         get => _extractedText;
-        set
-        {
-            if (_extractedText != value)
-            {
-                _extractedText = value;
-                // Property changed notification would go here
-            }
-        }
+        set => SetProperty(ref _extractedText, value);
     }
 
+    private bool _isProcessing;
     public bool IsProcessing
     {
         get => _isProcessing;
-        set
-        {
-            if (_isProcessing != value)
-            {
-                _isProcessing = value;
-                // Property changed notification would go here
-            }
-        }
+        set => SetProperty(ref _isProcessing, value);
     }
 
+    private bool _isTextExtracted;
     public bool IsTextExtracted
     {
         get => _isTextExtracted;
-        set
-        {
-            if (_isTextExtracted != value)
-            {
-                _isTextExtracted = value;
-                // Property changed notification would go here
-            }
-        }
+        set => SetProperty(ref _isTextExtracted, value);
     }
 
-    public ICommand SaveNoteCommand { get; }
-    public ICommand ShareNoteCommand { get; }
-    public ICommand ProcessAgainCommand { get; }
+    private double _ocrProgress;
+    public double OcrProgress
+    {
+        get => _ocrProgress;
+        set => SetProperty(ref _ocrProgress, value);
+    }
+
+    private string _ocrStatus = "Starting...";
+    public string OcrStatus
+    {
+        get => _ocrStatus;
+        set => SetProperty(ref _ocrStatus, value);
+    }
+
+    private int _ocrProgressPercent;
+    public int OcrProgressPercent
+    {
+        get => _ocrProgressPercent;
+        set => SetProperty(ref _ocrProgressPercent, value);
+    }
+
+    public IAsyncRelayCommand SaveNoteCommand { get; }
+    public IAsyncRelayCommand ShareNoteCommand { get; }
+    public IAsyncRelayCommand ProcessAgainCommand { get; }
 
     public ResultViewModel(string imagePath)
     {
         _databaseService = new DatabaseService();
         _ocrService = new OCRService();
         _imagePath = imagePath;
-        _extractedText = string.Empty; // Initialize to empty string
 
-        SaveNoteCommand = new AsyncRelayCommand(SaveNoteAsync);
-        ShareNoteCommand = new AsyncRelayCommand(ShareNoteAsync);
+        SaveNoteCommand = new AsyncRelayCommand(() => SaveNote(isShared: false));
+        ShareNoteCommand = new AsyncRelayCommand(() => SaveNote(isShared: true));
         ProcessAgainCommand = new AsyncRelayCommand(ProcessImageAsync);
 
-        // Start processing immediately
         MainThread.BeginInvokeOnMainThread(async () => await ProcessImageAsync());
     }
 
@@ -82,9 +77,19 @@ public class ResultViewModel // Note: removed ObservableObject inheritance
         {
             IsProcessing = true;
             IsTextExtracted = false;
-            ExtractedText = "Processing image...";
+            ExtractedText = string.Empty;
+            OcrProgress = 0;
+            OcrProgressPercent = 0;
+            OcrStatus = "Starting...";
 
-            var text = await _ocrService.RecognizeTextAsync(_imagePath);
+            var progress = new Progress<OcrProgressUpdate>(update =>
+            {
+                OcrStatus = update.StatusMessage;
+                OcrProgress = update.Percentage / 100.0;
+                OcrProgressPercent = update.Percentage;
+            });
+
+            var text = await _ocrService.RecognizeTextAsync(_imagePath, progress);
 
             ExtractedText = text;
             IsTextExtracted = true;
@@ -99,7 +104,7 @@ public class ResultViewModel // Note: removed ObservableObject inheritance
         }
     }
 
-    private async Task SaveNoteAsync()
+    private async Task SaveNote(bool isShared)
     {
         try
         {
@@ -108,8 +113,8 @@ public class ResultViewModel // Note: removed ObservableObject inheritance
                 ImagePath = _imagePath,
                 ExtractedText = ExtractedText,
                 CreatedAt = DateTime.Now,
-                IsShared = false,
-                IsAnonymous = false,
+                IsShared = isShared,
+                IsAnonymous = isShared,
                 Upvotes = 0,
                 CourseCode = "Unknown",
                 ContentType = "Notes"
@@ -118,44 +123,14 @@ public class ResultViewModel // Note: removed ObservableObject inheritance
             await _databaseService.SaveNoteAsync(note);
 
             await Shell.Current.DisplayAlert("Success",
-                "Note saved to your vault!", "OK");
+                isShared ? "Note shared anonymously to the feed!" : "Note saved to your vault!",
+                "OK");
 
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error",
-                $"Failed to save: {ex.Message}", "OK");
-        }
-    }
-
-    private async Task ShareNoteAsync()
-    {
-        try
-        {
-            var note = new Note
-            {
-                ImagePath = _imagePath,
-                ExtractedText = ExtractedText,
-                CreatedAt = DateTime.Now,
-                IsShared = true,
-                IsAnonymous = true,
-                Upvotes = 0,
-                CourseCode = "Unknown",
-                ContentType = "Notes"
-            };
-
-            await _databaseService.SaveNoteAsync(note);
-
-            await Shell.Current.DisplayAlert("Success",
-                "Note shared anonymously to the feed!", "OK");
-
-            await Shell.Current.GoToAsync("..");
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error",
-                $"Failed to share: {ex.Message}", "OK");
+            await Shell.Current.DisplayAlert("Error", $"Failed to save: {ex.Message}", "OK");
         }
     }
 }

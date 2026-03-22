@@ -10,7 +10,7 @@ public partial class ResultPage : ContentPage
         InitializeComponent();
     }
 
-    public string? ImagePath { get; set; } // Make it nullable
+    public string? ImagePath { get; set; }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
@@ -18,11 +18,11 @@ public partial class ResultPage : ContentPage
 
         if (!string.IsNullOrEmpty(ImagePath))
         {
-            // Load the image
-            CapturedImage.Source = ImageSource.FromFile(ImagePath);
-
-            // Set the ViewModel with the image path
+            // 1. Set BindingContext FIRST so all bindings (IsProcessing, OcrProgress, etc.) wire up
             BindingContext = new ResultViewModel(ImagePath);
+
+            // 2. Load image preview using x:Name reference (safe now that InitializeComponent ran)
+            CapturedImage.Source = ImageSource.FromFile(ImagePath);
         }
     }
 }
