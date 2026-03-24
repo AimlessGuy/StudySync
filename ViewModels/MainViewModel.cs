@@ -59,9 +59,11 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SelectNote(Note note) =>
-        await Shell.Current.DisplayAlert("Note", $"Selected: {note.CourseCode}", "OK");
-
+    private async Task SelectNote(Note note)
+    {
+        // Navigate to note detail page with the note ID
+        await Shell.Current.GoToAsync($"{nameof(NoteDetailPage)}?noteId={note.Id}");
+    }
 
 }
 

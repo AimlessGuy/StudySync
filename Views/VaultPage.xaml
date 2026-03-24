@@ -1,12 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             xmlns:models="clr-namespace:StudySync.Models"
              x:Class="StudySync.Views.VaultPage"
-             Title="My Vault">
-    <VerticalStackLayout Spacing="20" VerticalOptions="Center" HorizontalOptions="Center">
-        <Label Text="📚" FontSize="72"/>
-        <Label Text="Vault Page" FontSize="24" FontAttributes="Bold"/>
-        <Label Text="Phase 2 will show saved notes" TextColor="{DynamicResource Gray500}"/>
-        <Button Text="Back" Command="{Binding GoBackCommand}" WidthRequest="200"/>
-    </VerticalStackLayout>
+             x:DataType="viewModels:VaultViewModel"
+             Title="My Vault"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto, *" Padding="16" RowSpacing="12">
+
+        <!-- Header with note count -->
+        <Border Grid.Row="0"
+                BackgroundColor="{DynamicResource Primary}"
+                StrokeThickness="0"
+                Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+
+            <VerticalStackLayout Spacing="4">
+                <Label Text="📚 My Notes"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold" />
+                <Label Text="{Binding NoteCount, StringFormat='You have {0} saved notes'}"
+                       TextColor="White"
+                       FontSize="14" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Notes List -->
+        <CollectionView Grid.Row="1"
+                ItemsSource="{Binding Notes}"
+                SelectionMode="Single"
+                SelectionChangedCommand="{Binding SelectNoteCommand}"
+                SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}"
+                Margin="0,8,0,0">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center"
+                                     VerticalOptions="Center"
+                                     Spacing="12">
+                    <Label Text="📭"
+                           FontSize="48"
+                           HorizontalOptions="Center" />
+                    <Label Text="No notes yet"
+                           FontSize="16"
+                           HorizontalOptions="Center" />
+                    <Label Text="Tap the camera to capture your first note"
+                           TextColor="{DynamicResource Gray500}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Note">
+                    <Border Margin="0,0,0,8"
+                            Padding="16"
+                            BackgroundColor="{DynamicResource White}"
+                            StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+
+                        <Grid RowDefinitions="Auto, Auto, Auto"
+                              ColumnDefinitions="*, Auto"
+                              RowSpacing="4">
+
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Title}"
+                                   TextColor="{DynamicResource Primary}"
+                                   FontAttributes="Bold"
+                                   FontSize="16"
+                                   LineBreakMode="TailTruncation" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding TimeDisplay}"
+                                   TextColor="{DynamicResource Gray500}"
+                                   FontSize="12"
+                                   HorizontalOptions="End" />
+
+                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                   Text="{Binding PreviewText}"
+                                   MaxLines="2"
+                                   Margin="0,4,0,4"
+                                   LineBreakMode="TailTruncation"
+                                   FontSize="14" />
+
+                            <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2"
+                                                  Spacing="8">
+                                <Label Text="{Binding CourseCode}"
+                                       TextColor="{DynamicResource Gray600}"
+                                       FontSize="12" />
+                                <Label Text="•"
+                                       TextColor="{DynamicResource Gray600}" />
+                                <Label Text="{Binding ContentType}"
+                                       TextColor="{DynamicResource Gray600}"
+                                       FontSize="12" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

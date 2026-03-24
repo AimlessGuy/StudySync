@@ -10,6 +10,7 @@ namespace StudySync
             Routing.RegisterRoute(nameof(CameraPage), typeof(CameraPage));
             Routing.RegisterRoute(nameof(VaultPage), typeof(VaultPage));
             Routing.RegisterRoute(nameof(ResultPage), typeof(ResultPage));
+            Routing.RegisterRoute(nameof(NoteDetailPage), typeof(NoteDetailPage)); // Add this line
         }
     }
 }

@@ -8,4 +8,21 @@
                   Route="MainPage"
                   ContentTemplate="{DataTemplate views:MainPage}" />
 
+    <!-- Add these routes -->
+    <ShellContent Title="Camera"
+                  Route="CameraPage"
+                  ContentTemplate="{DataTemplate views:CameraPage}" />
+
+    <ShellContent Title="Vault"
+                  Route="VaultPage"
+                  ContentTemplate="{DataTemplate views:VaultPage}" />
+
+    <ShellContent Title="Result"
+                  Route="ResultPage"
+                  ContentTemplate="{DataTemplate views:ResultPage}" />
+
+    <ShellContent Title="NoteDetail"
+                  Route="NoteDetailPage"
+                  ContentTemplate="{DataTemplate views:NoteDetailPage}" />
+
 </Shell>
