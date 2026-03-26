@@ -1,28 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using StudySync.Models;
 using StudySync.Services;
 using System;
 using System.Threading.Tasks;
 
 namespace StudySync.ViewModels;
 
-[QueryProperty(nameof(NoteId), "noteId")]
-public partial class NoteDetailViewModel : ObservableObject
+// IQueryAttributable lets the ViewModel receive Shell navigation parameters directly
+public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly DatabaseService _databaseService;
-
-    private int _noteId;
-    public int NoteId
-    {
-        get => _noteId;
-        set
-        {
-            if (SetProperty(ref _noteId, value) && value > 0)
-            {
-                _ = LoadNoteAsync(value);
-            }
-        }
-    }
 
     private string _noteTitle = string.Empty;
     public string NoteTitle
@@ -64,10 +50,18 @@ public partial class NoteDetailViewModel : ObservableObject
         _databaseService = new DatabaseService();
     }
 
+    // MAUI Shell calls this automatically when navigating with query parameters
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue("noteId", out var value) &&
+            int.TryParse(value?.ToString(), out int id) && id > 0)
+        {
+            _ = LoadNoteAsync(id);
+        }
+    }
+
     private async Task LoadNoteAsync(int id)
     {
-        if (id <= 0) return;
-
         try
         {
             var notes = await _databaseService.GetNotesAsync();
@@ -79,7 +73,11 @@ public partial class NoteDetailViewModel : ObservableObject
                 NoteText = note.ExtractedText ?? "No text extracted";
                 CourseCode = note.CourseCode;
                 ContentType = note.ContentType;
-                CreatedDate = note.CreatedAt.ToString("MMM dd, yyyy • h:mm tt");
+                CreatedDate = note.CreatedAt.ToString("MMM dd, yyyy h:mm tt");
+            }
+            else
+            {
+                NoteText = "Note not found.";
             }
         }
         catch (Exception ex)

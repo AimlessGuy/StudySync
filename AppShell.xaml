@@ -8,7 +8,7 @@
                   Route="MainPage"
                   ContentTemplate="{DataTemplate views:MainPage}" />
 
-    <!-- Add these routes -->
+    <!-- Add these routes --><!--
     <ShellContent Title="Camera"
                   Route="CameraPage"
                   ContentTemplate="{DataTemplate views:CameraPage}" />
@@ -23,6 +23,6 @@
 
     <ShellContent Title="NoteDetail"
                   Route="NoteDetailPage"
-                  ContentTemplate="{DataTemplate views:NoteDetailPage}" />
+                  ContentTemplate="{DataTemplate views:NoteDetailPage}" />-->
 
 </Shell>
