@@ -1,51 +1,36 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using StudySync.Views;
 
 namespace StudySync.ViewModels;
 
-public partial class CameraViewModel // Note: no longer inherits ObservableObject
+public partial class CameraViewModel : ObservableObject
 {
     private ImageSource _previewSource;
-    private bool _isBusy;
-
     public ImageSource PreviewSource
     {
         get => _previewSource;
-        set
-        {
-            if (_previewSource != value)
-            {
-                _previewSource = value;
-                // Notify property changed - we'll add this later if needed
-            }
-        }
+        set => SetProperty(ref _previewSource, value);
     }
 
+    private bool _isBusy;
     public bool IsBusy
     {
         get => _isBusy;
-        set
-        {
-            if (_isBusy != value)
-            {
-                _isBusy = value;
-                // Notify property changed
-            }
-        }
+        set => SetProperty(ref _isBusy, value);
     }
 
-    public ICommand TakePhotoCommand { get; }
-    public ICommand PickPhotoCommand { get; }
+    public IAsyncRelayCommand TakePhotoCommand { get; }
+    public IAsyncRelayCommand PickPhotoCommand { get; }
 
     public CameraViewModel()
     {
-        PreviewSource = "camera_icon.png";
+        _previewSource = "camera_icon.png";
         TakePhotoCommand = new AsyncRelayCommand(TakePhotoAsync);
         PickPhotoCommand = new AsyncRelayCommand(PickPhotoAsync);
     }
@@ -56,7 +41,6 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
         {
             IsBusy = true;
 
-            // Check and request camera permission
             var cameraStatus = await Permissions.RequestAsync<Permissions.Camera>();
             if (cameraStatus != PermissionStatus.Granted)
             {
@@ -65,7 +49,6 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
                 return;
             }
 
-            // Check storage permission (for Android)
             if (DeviceInfo.Platform == DevicePlatform.Android)
             {
                 var storageStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
@@ -77,7 +60,6 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
                 }
             }
 
-            // Take photo using MediaPicker
             var photo = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions
             {
                 Title = "Capture your notes"
@@ -85,13 +67,8 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
 
             if (photo != null)
             {
-                // Save to app's local directory
                 var localPath = await SavePhotoAsync(photo);
-
-                // Display preview
                 PreviewSource = ImageSource.FromFile(localPath);
-
-                // Navigate to result page with the image path
                 await Shell.Current.GoToAsync($"{nameof(ResultPage)}?imagePath={Uri.EscapeDataString(localPath)}");
             }
         }
@@ -124,14 +101,13 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
 
             var photo = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
             {
-                Title = "Choose a photo"
+                Title = "Choose a photo of your notes"
             });
 
             if (photo != null)
             {
                 var localPath = await SavePhotoAsync(photo);
                 PreviewSource = ImageSource.FromFile(localPath);
-
                 await Shell.Current.GoToAsync($"{nameof(ResultPage)}?imagePath={Uri.EscapeDataString(localPath)}");
             }
         }
@@ -148,11 +124,9 @@ public partial class CameraViewModel // Note: no longer inherits ObservableObjec
 
     private async Task<string> SavePhotoAsync(FileResult photo)
     {
-        // Create a unique filename
         var fileName = $"note_{DateTime.Now:yyyyMMdd_HHmmss}.jpg";
         var localPath = Path.Combine(FileSystem.AppDataDirectory, fileName);
 
-        // Copy the photo to app's local storage
         using var sourceStream = await photo.OpenReadAsync();
         using var localStream = File.OpenWrite(localPath);
         await sourceStream.CopyToAsync(localStream);

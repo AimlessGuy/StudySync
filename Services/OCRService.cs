@@ -46,6 +46,8 @@ namespace StudySync.Services
             CancellationToken ct = default)
         {
 #if ANDROID
+        System.Diagnostics.Debug.WriteLine("✅ REAL ML KIT OCR IS RUNNING");
+
             try
             {
                 Report(progress, 5, "Checking cache...");
@@ -92,11 +94,12 @@ namespace StudySync.Services
                 float avgBrightness = GetAverageBrightness(gray);
                 float contrastAmount;
                 if (avgBrightness < 80f)
-                    contrastAmount = 2.0f;      // Dark image — strong boost
-                else if (avgBrightness < 150f)
-                    contrastAmount = 1.6f;      // Normal image — moderate boost
-                else
-                    contrastAmount = 1.2f;      // Already bright — gentle boost
+                contrastAmount = 3.5f;
+            else if (avgBrightness < 150f)
+                contrastAmount = 2.8f;
+            else
+                contrastAmount = 2.0f;
+
 
                 var contrast = IncreaseContrast(gray, contrastAmount);
                 gray.Recycle();
@@ -105,10 +108,21 @@ namespace StudySync.Services
                 ct.ThrowIfCancellationRequested();
 
                 // ── Step 6 – Sharpen to make text edges crisper ──────────────────
-                Report(progress, 60, "Sharpening...");
-                var sharpened = Sharpen(contrast);
-                contrast.Recycle();
-                contrast.Dispose();
+               Report(progress, 58, "Denoising...");
+                var denoised = Denoise(contrast);
+                if (!ReferenceEquals(denoised, contrast))
+                {
+                    contrast.Recycle();
+                    contrast.Dispose();
+                }
+
+                Report(progress, 65, "Sharpening...");
+                var sharpened = Sharpen(denoised);
+                if (!ReferenceEquals(sharpened, denoised))
+                {
+                    denoised.Recycle();
+                    denoised.Dispose();
+                }
 
                 ct.ThrowIfCancellationRequested();
 
@@ -207,7 +221,7 @@ namespace StudySync.Services
 
                     // FIX 1: Increased from 1024 → 2048 for better accuracy on
                     // handwritten notes. Higher res = more detail for ML Kit to work with.
-                    const int targetSize = 2048;
+                    const int targetSize = 3072;
                     int sampleSize = 1;
                     int h = boundsOpts.OutHeight;
                     int w = boundsOpts.OutWidth;
@@ -371,6 +385,49 @@ namespace StudySync.Services
                 rs?.Destroy();
             }
         }
+
+        private static Bitmap Denoise(Bitmap source)
+{
+    // Mild box blur to smooth out noise before sharpening.
+    // Kernel weights sum to 1 so brightness is preserved.
+    var kernel = new float[]
+    {
+        1/9f, 1/9f, 1/9f,
+        1/9f, 1/9f, 1/9f,
+        1/9f, 1/9f, 1/9f
+    };
+
+    Android.Renderscripts.RenderScript? rs = null;
+    try
+    {
+        rs = Android.Renderscripts.RenderScript.Create(Android.App.Application.Context);
+        var alloc    = Android.Renderscripts.Allocation.CreateFromBitmap(rs, source)!;
+        var outAlloc = Android.Renderscripts.Allocation.CreateTyped(rs, alloc.Type)!;
+        var script   = Android.Renderscripts.ScriptIntrinsicConvolve3x3
+                           .Create(rs, Android.Renderscripts.Element.U8_4(rs))!;
+
+        script.SetInput(alloc);
+        script.SetCoefficients(kernel);
+        script.ForEach(outAlloc);
+
+        var result = Bitmap.CreateBitmap(source.Width, source.Height, Bitmap.Config.Argb8888)!;
+        outAlloc.CopyTo(result);
+
+        alloc.Destroy();
+        outAlloc.Destroy();
+        script.Destroy();
+
+        return result;
+    }
+    catch
+    {
+        return source;
+    }
+    finally
+    {
+        rs?.Destroy();
+    }
+}
 #endif
     }
 }

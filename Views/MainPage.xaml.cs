@@ -1,5 +1,5 @@
 using StudySync.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
+using StudySync.Services;
 
 namespace StudySync.Views;
 
@@ -8,21 +8,13 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
+        // Create MainViewModel directly with a new DatabaseService
+        BindingContext = new MainViewModel(new DatabaseService());
         Loaded += OnLoaded;
-        TrySetBindingContext();
-    }
-
-    private void TrySetBindingContext()
-    {
-        if (BindingContext != null) return;
-
-        BindingContext = Application.Current?.Handler?.MauiContext?.Services.GetService<MainViewModel>();
-        System.Diagnostics.Debug.WriteLine($"BindingContext set: {BindingContext != null}");
     }
 
     private async void OnLoaded(object? sender, EventArgs e)
     {
-        TrySetBindingContext();
         if (BindingContext is MainViewModel vm)
             await vm.LoadNotesAsync();
     }

@@ -52,16 +52,18 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+   
     private async Task GoToFeed()
     {
-        System.Diagnostics.Debug.WriteLine("🟢 GoToFeed executed");
-        await Shell.Current.DisplayAlert("Coming Soon", "Feed will be in Phase 3", "OK");
+        await Shell.Current.GoToAsync(nameof(Views.FeedPage));
     }
 
     [RelayCommand]
-    private async Task SelectNote(Note note) =>
-        await Shell.Current.DisplayAlert("Note", $"Selected: {note.CourseCode}", "OK");
-
+    private async Task SelectNote(Note note)
+    {
+        // Navigate to note detail page with the note ID
+        await Shell.Current.GoToAsync($"{nameof(NoteDetailPage)}?noteId={note.Id}");
+    }
 
 }
 

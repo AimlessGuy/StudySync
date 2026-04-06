@@ -3,14 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:StudySync.ViewModels"
              xmlns:models="clr-namespace:StudySync.Models"
-             x:Class="StudySync.Views.VaultPage"
-             x:DataType="viewModels:VaultViewModel"
-             Title="My Vault"
+             x:Class="StudySync.Views.FeedPage"
+             x:DataType="viewModels:FeedViewModel"
+             Title="📱 Class Feed"
              BackgroundColor="{DynamicResource Background}">
 
     <Grid RowDefinitions="Auto, *" Padding="16" RowSpacing="12">
 
-        <!-- Header with note count -->
+        <!-- Header -->
         <Border Grid.Row="0"
                 BackgroundColor="{DynamicResource Primary}"
                 StrokeThickness="0"
@@ -18,29 +18,22 @@
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="12" />
             </Border.StrokeShape>
-
             <VerticalStackLayout Spacing="4">
-                <Label Text="📚 My Notes"
+                <Label Text="📱 Class Feed"
                        TextColor="White"
-                       FontSize="18"
+                       FontSize="20"
                        FontAttributes="Bold" />
-                <Label Text="{Binding NoteCount, StringFormat='You have {0} saved notes'}"
+                <Label Text="{Binding SharedCount, StringFormat='{0} notes shared by classmates'}"
                        TextColor="White"
-                       FontSize="14" />
+                       FontSize="13" />
             </VerticalStackLayout>
         </Border>
 
-        <!-- Notes List -->
-        <CollectionView x:Name="NotesCollection"
-                Grid.Row="1"
-                ItemsSource="{Binding Notes}"
-                SelectionMode="Single"
-                Margin="0,8,0,0">
-
-
-
-
-
+        <!-- Shared Notes List -->
+        <CollectionView x:Name="FeedCollection"
+                        Grid.Row="1"
+                        ItemsSource="{Binding SharedNotes}"
+                        Margin="0,8,0,0">
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center"
@@ -49,10 +42,10 @@
                     <Label Text="📭"
                            FontSize="48"
                            HorizontalOptions="Center" />
-                    <Label Text="No notes yet"
+                    <Label Text="No shared notes yet"
                            FontSize="16"
                            HorizontalOptions="Center" />
-                    <Label Text="Tap the camera to capture your first note"
+                    <Label Text="Be the first to share from the camera!"
                            TextColor="{DynamicResource Gray500}"
                            HorizontalOptions="Center" />
                 </VerticalStackLayout>
@@ -60,7 +53,7 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Note">
-                    <Border Margin="0,0,0,8"
+                    <Border Margin="0,0,0,10"
                             Padding="16"
                             BackgroundColor="{DynamicResource White}"
                             StrokeThickness="0">
@@ -68,47 +61,45 @@
                             <RoundRectangle CornerRadius="12" />
                         </Border.StrokeShape>
 
-                       
-                      
                         <Grid RowDefinitions="Auto, Auto, Auto"
                               ColumnDefinitions="*, Auto"
-                              RowSpacing="4">
+                              RowSpacing="6">
 
+                            <!-- Course + Time -->
                             <Label Grid.Row="0" Grid.Column="0"
-                                   Text="{Binding Title}"
+                                   Text="{Binding CourseCode}"
                                    TextColor="{DynamicResource Primary}"
                                    FontAttributes="Bold"
-                                   FontSize="16"
-                                   LineBreakMode="TailTruncation" />
-
+                                   FontSize="16" />
                             <Label Grid.Row="0" Grid.Column="1"
                                    Text="{Binding TimeDisplay}"
                                    TextColor="{DynamicResource Gray500}"
                                    FontSize="12"
                                    HorizontalOptions="End" />
 
+                            <!-- Preview Text -->
                             <Label Grid.Row="1" Grid.ColumnSpan="2"
                                    Text="{Binding PreviewText}"
-                                   MaxLines="2"
-                                   Margin="0,4,0,4"
+                                   MaxLines="3"
                                    LineBreakMode="TailTruncation"
                                    FontSize="14" />
 
-                            <HorizontalStackLayout Grid.Row="2" Grid.ColumnSpan="2"
-                                                  Spacing="8">
-                                <Label Text="{Binding CourseCode}"
-                                       TextColor="{DynamicResource Gray600}"
-                                       FontSize="12" />
-                                <Label Text="•"
-                                       TextColor="{DynamicResource Gray600}" />
+                            <!-- Content type + Anonymous badge -->
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Spacing="8">
                                 <Label Text="{Binding ContentType}"
                                        TextColor="{DynamicResource Gray600}"
                                        FontSize="12" />
+                                <Label Text="🕵️ Anonymous"
+                                       TextColor="{DynamicResource Gray500}"
+                                       FontSize="12"
+                                       IsVisible="{Binding IsAnonymous}" />
                             </HorizontalStackLayout>
+
                         </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
     </Grid>
 </ContentPage>

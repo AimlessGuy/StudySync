@@ -8,6 +8,8 @@ public class Note
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
 
+    public string Title { get; set; } = "Untitled Note";
+
     public string? ImagePath { get; set; }
 
     public string? ExtractedText { get; set; }
@@ -30,6 +32,8 @@ public class Note
         : "No text";
 
     public string TimeDisplay => GetRelativeTime(CreatedAt);
+
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     private string GetRelativeTime(DateTime dateTime)
     {
