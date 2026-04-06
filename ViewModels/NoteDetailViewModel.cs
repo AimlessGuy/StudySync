@@ -1,14 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using StudySync.Models;
 using StudySync.Services;
 using System;
 using System.Threading.Tasks;
 
 namespace StudySync.ViewModels;
 
-// IQueryAttributable lets the ViewModel receive Shell navigation parameters directly
 public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
 {
     private readonly DatabaseService _databaseService;
+    private Note? _currentNote;
 
     private string _noteTitle = string.Empty;
     public string NoteTitle
@@ -45,12 +47,30 @@ public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
         set => SetProperty(ref _createdDate, value);
     }
 
+    private string _updatedDate = string.Empty;
+    public string UpdatedDate
+    {
+        get => _updatedDate;
+        set => SetProperty(ref _updatedDate, value);
+    }
+
+    private bool _isLoading;
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set => SetProperty(ref _isLoading, value);
+    }
+
+    public IAsyncRelayCommand SaveChangesCommand { get; }
+    public IAsyncRelayCommand DeleteNoteCommand { get; }
+
     public NoteDetailViewModel()
     {
         _databaseService = new DatabaseService();
+        SaveChangesCommand = new AsyncRelayCommand(SaveChangesAsync);
+        DeleteNoteCommand = new AsyncRelayCommand(DeleteNoteAsync);
     }
 
-    // MAUI Shell calls this automatically when navigating with query parameters
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
         if (query.TryGetValue("noteId", out var value) &&
@@ -64,25 +84,76 @@ public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
     {
         try
         {
-            var notes = await _databaseService.GetNotesAsync();
-            var note = notes.Find(n => n.Id == id);
+            IsLoading = true;
+            NoteText = "Loading...";
 
-            if (note != null)
+            var notes = await _databaseService.GetNotesAsync();
+            _currentNote = notes.Find(n => n.Id == id);
+
+            if (_currentNote != null)
             {
-                NoteTitle = string.IsNullOrEmpty(note.Title) ? "Untitled Note" : note.Title;
-                NoteText = note.ExtractedText ?? "No text extracted";
-                CourseCode = note.CourseCode;
-                ContentType = note.ContentType;
-                CreatedDate = note.CreatedAt.ToString("MMM dd, yyyy h:mm tt");
+                NoteTitle = string.IsNullOrEmpty(_currentNote.Title) ? "Untitled Note" : _currentNote.Title;
+                NoteText = _currentNote.ExtractedText ?? "No text extracted";
+                CourseCode = _currentNote.CourseCode;
+                ContentType = _currentNote.ContentType;
+                CreatedDate = _currentNote.CreatedAt.ToString("MMM dd, yyyy h:mm tt");
+                UpdatedDate = _currentNote.UpdatedAt.ToString("MMM dd, yyyy h:mm tt");
             }
             else
             {
-                NoteText = "Note not found.";
+                NoteTitle = "Note Not Found";
+                NoteText = "This note may have been deleted.";
             }
         }
         catch (Exception ex)
         {
-            NoteText = $"Error loading note: {ex.Message}";
+            NoteTitle = "Error";
+            NoteText = $"Could not load note: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        if (_currentNote == null) return;
+
+        try
+        {
+            _currentNote.ExtractedText = NoteText;
+            _currentNote.Title = NoteTitle;
+            _currentNote.UpdatedAt = DateTime.Now;
+            UpdatedDate = _currentNote.UpdatedAt.ToString("MMM dd, yyyy h:mm tt");
+            await _databaseService.SaveNoteAsync(_currentNote);
+            await Shell.Current.DisplayAlert("Saved ✓", "Your edits have been saved.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", $"Could not save: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task DeleteNoteAsync()
+    {
+        if (_currentNote == null) return;
+
+        bool confirm = await Shell.Current.DisplayAlert(
+            "Delete Note",
+            "Are you sure you want to delete this note? This cannot be undone.",
+            "Delete", "Cancel");
+
+        if (!confirm) return;
+
+        try
+        {
+            await _databaseService.DeleteNoteAsync(_currentNote);
+            await Shell.Current.GoToAsync("..");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", $"Could not delete: {ex.Message}", "OK");
         }
     }
 }

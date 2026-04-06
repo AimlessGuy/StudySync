@@ -52,10 +52,10 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+   
     private async Task GoToFeed()
     {
-        System.Diagnostics.Debug.WriteLine("🟢 GoToFeed executed");
-        await Shell.Current.DisplayAlert("Coming Soon", "Feed will be in Phase 3", "OK");
+        await Shell.Current.GoToAsync(nameof(Views.FeedPage));
     }
 
     [RelayCommand]

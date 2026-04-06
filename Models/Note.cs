@@ -33,6 +33,8 @@ public class Note
 
     public string TimeDisplay => GetRelativeTime(CreatedAt);
 
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
     private string GetRelativeTime(DateTime dateTime)
     {
         var span = DateTime.Now - dateTime;

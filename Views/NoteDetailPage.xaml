@@ -7,7 +7,7 @@
              Title="{Binding NoteTitle}"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="Auto, *" Padding="16" RowSpacing="12">
+    <Grid RowDefinitions="Auto, Auto, *" Padding="16" RowSpacing="12">
 
         <!-- Note Info Card -->
         <Border Grid.Row="0"
@@ -19,10 +19,14 @@
             </Border.StrokeShape>
 
             <VerticalStackLayout Spacing="8">
-                <Label Text="{Binding NoteTitle}"
-                       FontSize="20"
-                       FontAttributes="Bold"
-                       TextColor="{DynamicResource Primary}" />
+                <Editor Text="{Binding NoteTitle}"
+                    FontSize="20"
+                    FontAttributes="Bold"
+                    TextColor="{DynamicResource Primary}"
+                    BackgroundColor="Transparent"
+                    AutoSize="TextChanges"
+                    Placeholder="Enter title..." /> 
+
 
                 <HorizontalStackLayout Spacing="12">
                     <Label Text="{Binding CourseCode}"
@@ -35,9 +39,12 @@
                            TextColor="{DynamicResource Gray600}" />
                     <Label Text="•"
                            TextColor="{DynamicResource Gray600}" />
-                    <Label Text="{Binding CreatedDate}"
+                    <Label Text="{Binding UpdatedDate, StringFormat='Updated: {0}'}"
                            FontSize="14"
                            TextColor="{DynamicResource Gray600}" />
+                    <Label Text="{Binding CreatedDate}"
+                           IsVisible="False" />
+                    
                 </HorizontalStackLayout>
 
                 <Label Text="📝 Extracted Text"
@@ -48,20 +55,48 @@
         </Border>
 
         <!-- Scrollable Text Content -->
-        <Border Grid.Row="1"
-                BackgroundColor="{DynamicResource White}"
-                StrokeThickness="0"
-                Padding="16">
+        <Border Grid.Row="2"
+        BackgroundColor="{DynamicResource White}"
+        StrokeThickness="0"
+        Padding="16">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="12" />
             </Border.StrokeShape>
 
-            <ScrollView>
-                <Label Text="{Binding NoteText}"
-                       FontSize="14"
-                       TextColor="{DynamicResource Gray900}"
-                       LineBreakMode="WordWrap" />
-            </ScrollView>
+            <Grid RowDefinitions="Auto, *, Auto" RowSpacing="12">
+
+                <Label Grid.Row="0"
+               Text="📝 Extracted Text — tap to edit"
+               FontSize="13"
+               TextColor="{DynamicResource Gray500}" />
+
+                <Editor Grid.Row="1"
+                Text="{Binding NoteText}"
+                FontSize="14"
+                TextColor="{DynamicResource Gray900}"
+                BackgroundColor="{DynamicResource Gray100}"
+                AutoSize="TextChanges"
+                MinimumHeightRequest="200" />
+
+                <Grid Grid.Row="2"
+              ColumnDefinitions="*, *"
+              ColumnSpacing="8">
+
+                    <Button Grid.Column="0"
+                    Text="💾 Save Changes"
+                    Command="{Binding SaveChangesCommand}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    CornerRadius="8" />
+
+                    <Button Grid.Column="1"
+                    Text="🗑 Delete"
+                    Command="{Binding DeleteNoteCommand}"
+                    BackgroundColor="#E53935"
+                    TextColor="White"
+                    CornerRadius="8" />
+                </Grid>
+
+            </Grid>
         </Border>
 
     </Grid>

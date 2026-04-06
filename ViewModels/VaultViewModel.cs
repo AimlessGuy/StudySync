@@ -63,8 +63,10 @@ public partial class VaultViewModel : ObservableObject
     [RelayCommand]
     private async Task SelectNote(Note note)
     {
+        System.Diagnostics.Debug.WriteLine($"🟡 SelectNote fired. Note is null: {note == null}");
         if (note != null)
         {
+            System.Diagnostics.Debug.WriteLine($"🟢 Navigating to note ID: {note.Id}");
             await Shell.Current.GoToAsync($"{nameof(NoteDetailPage)}?noteId={note.Id}");
         }
     }
