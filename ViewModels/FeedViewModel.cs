@@ -4,6 +4,7 @@ using StudySync.Models;
 using StudySync.Services;
 using System.Collections.ObjectModel;
 
+
 namespace StudySync.ViewModels;
 
 public partial class FeedViewModel : ObservableObject
@@ -37,5 +38,20 @@ public partial class FeedViewModel : ObservableObject
         foreach (var note in notes)
             SharedNotes.Add(note);
         SharedCount = SharedNotes.Count;
+    }
+
+    [RelayCommand]
+    private async Task UpvoteNote(Note note)
+    {
+        if (note == null) return;
+        await _databaseService.UpvoteNoteAsync(note);
+
+        // Refresh the note in the list so the counter updates on screen
+        var index = SharedNotes.IndexOf(note);
+        if (index >= 0)
+        {
+            SharedNotes.RemoveAt(index);
+            SharedNotes.Insert(index, note);
+        }
     }
 }

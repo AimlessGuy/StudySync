@@ -29,6 +29,12 @@ namespace StudySync.Services
         public Task<int> SaveNoteAsync(Note note) =>
             note.Id == 0 ? _database.InsertAsync(note) : _database.UpdateAsync(note);
 
+        public Task<int> UpvoteNoteAsync(Note note)
+        {
+            note.Upvotes++;
+            return _database.UpdateAsync(note);
+        }
+
         public Task<int> DeleteNoteAsync(Note note) => _database.DeleteAsync(note);
         public Task<int> GetNotesCountAsync() => _database.Table<Note>().CountAsync();
     }
