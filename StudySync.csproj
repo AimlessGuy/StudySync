@@ -73,11 +73,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="google-services%281%29.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <GoogleServicesJson Include="google-services(1).json" />
+	  <GoogleServicesJson Include="google-services.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -86,6 +82,8 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
 		<PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.120" />
+		<PackageReference Include="Plugin.Firebase.Core" Version="4.2.0" />
+		<PackageReference Include="Plugin.Firebase.Firestore" Version="4.0.0" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
 		<PackageReference Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="*" ExcludeAssets="all" />
