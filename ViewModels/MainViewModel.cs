@@ -59,6 +59,12 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task GoToSections()
+    {
+        await Shell.Current.GoToAsync(nameof(Views.SectionsPage));
+    }
+
+    [RelayCommand]
     private async Task SelectNote(Note note)
     {
         // Navigate to note detail page with the note ID

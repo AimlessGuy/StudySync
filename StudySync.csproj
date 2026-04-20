@@ -134,7 +134,7 @@
 			<!-- Remove duplicate savedstate-ktx AAR -->
 			<_DuplicateAar Include="@(AndroidLibrary)" Condition="$([System.String]::Copy('%(Filename)').Contains('savedstate-ktx'))" />
 			<AndroidLibrary Remove="@(_DuplicateAar)" />
-		</ItemGroup>
+		</ItemGroup>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 		<Message Text="Removed duplicate JVM jar: @(_DuplicateJar)" Importance="high" Condition="'@(_DuplicateJar)' != ''" />
 		<Message Text="Removed duplicate savedstate-ktx AAR: @(_DuplicateAar)" Importance="high" Condition="'@(_DuplicateAar)' != ''" />
 	</Target>

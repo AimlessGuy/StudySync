@@ -28,13 +28,14 @@ public static class MauiProgram
         builder.Services.AddTransient<CameraViewModel>();
         builder.Services.AddTransient<VaultViewModel>();
         builder.Services.AddTransient<NoteDetailViewModel>();
+        builder.Services.AddTransient<SectionsViewModel>();
         
         // Register Views
         builder.Services.AddTransient<Views.MainPage>();
         builder.Services.AddTransient<CameraPage>();
         builder.Services.AddTransient<VaultPage>();
         builder.Services.AddTransient<ResultPage>(); 
-        
+        builder.Services.AddTransient<SectionsPage>();
         builder.Services.AddTransient<NoteDetailPage>();
 
         return builder.Build();

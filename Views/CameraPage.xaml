@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
              x:Class="StudySync.Views.CameraPage"
+             x:DataType="viewModels:CameraViewModel"
              Title="Capture Notes"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="*, Auto, Auto"
+    <Grid RowDefinitions="*,Auto,Auto"
           Padding="16"
           RowSpacing="16">
-
-        <!-- Image Preview Area -->
         <Border Grid.Row="0"
-                BackgroundColor="{DynamicResource Gray200}"
+                BackgroundColor="{DynamicResource SurfaceMuted}"
                 StrokeThickness="0">
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="12" />
@@ -25,24 +25,22 @@
                    VerticalOptions="Center" />
         </Border>
 
-        <!-- Capture Button -->
         <Button Grid.Row="1"
-                Text="📸 Take Photo"
+                Text="Take Photo"
                 Command="{Binding TakePhotoCommand}"
                 BackgroundColor="{DynamicResource Primary}"
+                TextColor="White"
                 HeightRequest="60"
                 CornerRadius="12"
                 FontSize="18" />
 
-        <!-- Pick from Gallery Button (Optional) -->
         <Button Grid.Row="2"
-                Text="📂 Choose from Gallery"
+                Text="Choose from Gallery"
                 Command="{Binding PickPhotoCommand}"
                 BackgroundColor="{DynamicResource Secondary}"
                 TextColor="{DynamicResource Gray900}"
                 HeightRequest="60"
                 CornerRadius="12"
                 FontSize="16" />
-
     </Grid>
 </ContentPage>

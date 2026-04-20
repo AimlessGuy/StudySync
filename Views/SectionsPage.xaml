@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             xmlns:models="clr-namespace:StudySync.Models"
+             x:Class="StudySync.Views.SectionsPage"
+             x:Name="SectionsPageRoot"
+             x:DataType="viewModels:SectionsViewModel"
+             Title="Sections"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="16"
+          RowSpacing="12">
+        <Border Grid.Row="0"
+                BackgroundColor="{DynamicResource Primary}"
+                StrokeThickness="0"
+                Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Your Sections"
+                       TextColor="White"
+                       FontSize="20"
+                       FontAttributes="Bold" />
+                <Label Text="{Binding SectionCount, StringFormat='You currently have {0} sections on this device'}"
+                       TextColor="White"
+                       FontSize="13" />
+            </VerticalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="12">
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        StrokeThickness="0"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Create a section"
+                               TextColor="{DynamicResource Gray900}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Entry Text="{Binding NewSectionName}"
+                               Placeholder="Example: BSIT 2-A"
+                               ClearButtonVisibility="WhileEditing" />
+                        <Button Text="Create Section"
+                                Command="{Binding CreateSectionCommand}"
+                                BackgroundColor="{DynamicResource Primary}"
+                                TextColor="White" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="{DynamicResource Surface}"
+                        StrokeThickness="0"
+                        Padding="16">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Join by invite code"
+                               TextColor="{DynamicResource Gray900}"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Entry Text="{Binding JoinCode}"
+                               Placeholder="Paste code here"
+                               ClearButtonVisibility="WhileEditing" />
+                        <Button Text="Join Section"
+                                Command="{Binding JoinSectionCommand}"
+                                BackgroundColor="{DynamicResource Secondary}"
+                                TextColor="{DynamicResource Gray900}" />
+                        <Label Text="Share the invite code with classmates so they can join this section from their own device."
+                               TextColor="{DynamicResource Gray500}"
+                               FontSize="12" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <CollectionView ItemsSource="{Binding JoinedSections}"
+                                SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout Spacing="8"
+                                             Padding="12">
+                            <Label Text="No sections yet"
+                                   TextColor="{DynamicResource Gray900}"
+                                   FontSize="16"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Create your first section above, then use its code to invite classmates."
+                                   TextColor="{DynamicResource Gray500}"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Section">
+                            <Border Margin="0,0,0,10"
+                                    BackgroundColor="{DynamicResource Surface}"
+                                    StrokeThickness="0"
+                                    Padding="16">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <VerticalStackLayout Spacing="8">
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding Name}"
+                                               TextColor="{DynamicResource Gray900}"
+                                               FontSize="16"
+                                               FontAttributes="Bold" />
+                                        <Label Text="Creator"
+                                               IsVisible="{Binding IsCreator}"
+                                               TextColor="{DynamicResource Primary}"
+                                               FontSize="12" />
+                                    </HorizontalStackLayout>
+
+                                    <Label Text="{Binding InviteCode, StringFormat='Invite code: {0}'}"
+                                           TextColor="{DynamicResource Gray600}"
+                                           FontSize="13" />
+
+                                    <Grid ColumnDefinitions="*,*"
+                                          ColumnSpacing="8">
+                                        <Button Grid.Column="0"
+                                                x:DataType="{x:Null}"
+                                                Text="Copy Code"
+                                                Command="{Binding Source={x:Reference SectionsPageRoot}, Path=BindingContext.CopyInviteCodeCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="{DynamicResource Gray100}"
+                                                TextColor="{DynamicResource Gray900}" />
+                                        <Button Grid.Column="1"
+                                                x:DataType="{x:Null}"
+                                                Text="Share Invite"
+                                                Command="{Binding Source={x:Reference SectionsPageRoot}, Path=BindingContext.ShareInviteCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="{DynamicResource Secondary}"
+                                                TextColor="{DynamicResource Gray900}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

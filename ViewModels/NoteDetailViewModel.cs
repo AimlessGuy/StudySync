@@ -1,5 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
 using StudySync.Models;
 using StudySync.Services;
 using System;
@@ -63,12 +64,14 @@ public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
 
     public IAsyncRelayCommand SaveChangesCommand { get; }
     public IAsyncRelayCommand DeleteNoteCommand { get; }
+    public IAsyncRelayCommand ShareNoteCommand { get; }
 
     public NoteDetailViewModel()
     {
         _databaseService = new DatabaseService();
         SaveChangesCommand = new AsyncRelayCommand(SaveChangesAsync);
         DeleteNoteCommand = new AsyncRelayCommand(DeleteNoteAsync);
+        ShareNoteCommand = new AsyncRelayCommand(ShareNoteAsync);
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -127,7 +130,7 @@ public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
             _currentNote.UpdatedAt = DateTime.Now;
             UpdatedDate = _currentNote.UpdatedAt.ToString("MMM dd, yyyy h:mm tt");
             await _databaseService.SaveNoteAsync(_currentNote);
-            await Shell.Current.DisplayAlert("Saved ✓", "Your edits have been saved.", "OK");
+            await Shell.Current.DisplayAlert("Saved", "Your edits have been saved.", "OK");
         }
         catch (Exception ex)
         {
@@ -154,6 +157,29 @@ public partial class NoteDetailViewModel : ObservableObject, IQueryAttributable
         catch (Exception ex)
         {
             await Shell.Current.DisplayAlert("Error", $"Could not delete: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task ShareNoteAsync()
+    {
+        if (_currentNote == null) return;
+
+        try
+        {
+            var title = string.IsNullOrWhiteSpace(NoteTitle) ? "StudySync Note" : NoteTitle;
+            var course = string.IsNullOrWhiteSpace(CourseCode) ? "General" : CourseCode;
+            var body = string.IsNullOrWhiteSpace(NoteText) ? "No text available." : NoteText;
+
+            await Share.Default.RequestAsync(new ShareTextRequest
+            {
+                Title = title,
+                Subject = $"{course} note",
+                Text = $"{title}\nCourse: {course}\n\n{body}"
+            });
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", $"Could not share note: {ex.Message}", "OK");
         }
     }
 }

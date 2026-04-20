@@ -1,21 +1,20 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using StudySync.Models;
 using StudySync.Services;
 using System.Collections.ObjectModel;
-
 
 namespace StudySync.ViewModels;
 
 public partial class FeedViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
+    private readonly PostCloudService _postCloudService;
 
-    private ObservableCollection<Note> _sharedNotes = new();
-    public ObservableCollection<Note> SharedNotes
+    private ObservableCollection<SectionPost> _sharedPosts = new();
+    public ObservableCollection<SectionPost> SharedPosts
     {
-        get => _sharedNotes;
-        set => SetProperty(ref _sharedNotes, value);
+        get => _sharedPosts;
+        set => SetProperty(ref _sharedPosts, value);
     }
 
     private int _sharedCount;
@@ -28,30 +27,31 @@ public partial class FeedViewModel : ObservableObject
     public FeedViewModel()
     {
         _databaseService = new DatabaseService();
+        _postCloudService = new PostCloudService();
     }
 
-    [RelayCommand]
     public async Task LoadFeedAsync()
     {
-        var notes = await _databaseService.GetSharedNotesAsync();
-        SharedNotes.Clear();
-        foreach (var note in notes)
-            SharedNotes.Add(note);
-        SharedCount = SharedNotes.Count;
-    }
-
-    [RelayCommand]
-    private async Task UpvoteNote(Note note)
-    {
-        if (note == null) return;
-        await _databaseService.UpvoteNoteAsync(note);
-
-        // Refresh the note in the list so the counter updates on screen
-        var index = SharedNotes.IndexOf(note);
-        if (index >= 0)
+        try
         {
-            SharedNotes.RemoveAt(index);
-            SharedNotes.Insert(index, note);
+            var joinedSections = await _databaseService.GetSectionsAsync();
+            var posts = await _postCloudService.GetPostsForSectionsAsync(joinedSections);
+
+            SharedPosts.Clear();
+            foreach (var post in posts)
+                SharedPosts.Add(post);
+
+            SharedCount = SharedPosts.Count;
+        }
+        catch (Exception ex)
+        {
+            SharedPosts.Clear();
+            SharedCount = 0;
+
+            await Shell.Current.DisplayAlert(
+                "Feed error",
+                $"Could not load shared posts right now: {ex.Message}",
+                "OK");
         }
     }
 }

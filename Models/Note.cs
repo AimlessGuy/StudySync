@@ -1,9 +1,10 @@
-﻿using SQLite;
+using CommunityToolkit.Mvvm.ComponentModel;
+using SQLite;
 using System;
 
-namespace StudySync.Models;  // ADD THIS LINE
+namespace StudySync.Models;
 
-public class Note
+public class Note : ObservableObject
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
@@ -20,13 +21,21 @@ public class Note
 
     public bool IsAnonymous { get; set; }
 
-    public int Upvotes { get; set; }
+    private int _upvotes;
+    public int Upvotes
+    {
+        get => _upvotes;
+        set => SetProperty(ref _upvotes, value);
+    }
 
     public string CourseCode { get; set; } = "Unknown";
 
     public string ContentType { get; set; } = "Notes";
 
-    // Helper properties with null handling
+    public string PrimarySubjectTag { get; set; } = string.Empty;
+
+    public string SecondaryTags { get; set; } = string.Empty;
+
     public string PreviewText => !string.IsNullOrEmpty(ExtractedText)
         ? (ExtractedText.Length > 100 ? ExtractedText.Substring(0, 100) + "..." : ExtractedText)
         : "No text";
