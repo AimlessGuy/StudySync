@@ -13,30 +13,45 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            .UseMauiCommunityToolkit() // <-- ADD THIS LINE
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // Register services
+        builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<DatabaseService>();
+        builder.Services.AddSingleton<ISystemNotificationService, NoOpSystemNotificationService>();
+        builder.Services.AddSingleton<NotificationService>();
+        builder.Services.AddSingleton<AppShell>();
 
-        // Register ViewModels
+        builder.Services.AddTransient<AuthViewModel>();
+        builder.Services.AddTransient<AccountViewModel>();
         builder.Services.AddTransient<MainViewModel>();
         builder.Services.AddTransient<CameraViewModel>();
         builder.Services.AddTransient<VaultViewModel>();
         builder.Services.AddTransient<NoteDetailViewModel>();
         builder.Services.AddTransient<SectionsViewModel>();
+        builder.Services.AddTransient<NotificationsViewModel>();
+        builder.Services.AddTransient<SharedPostDetailViewModel>();
+        builder.Services.AddTransient<SectionDetailViewModel>();
         
-        // Register Views
+        builder.Services.AddTransient<AuthPage>();
+        builder.Services.AddTransient<AccountPage>();
         builder.Services.AddTransient<Views.MainPage>();
         builder.Services.AddTransient<CameraPage>();
         builder.Services.AddTransient<VaultPage>();
         builder.Services.AddTransient<ResultPage>(); 
         builder.Services.AddTransient<SectionsPage>();
+        builder.Services.AddTransient<NotificationsPage>();
         builder.Services.AddTransient<NoteDetailPage>();
+        builder.Services.AddTransient<SharedPostDetailPage>();
+        builder.Services.AddTransient<SectionDetailPage>();
+
+#if ANDROID
+        builder.Services.AddSingleton<ISystemNotificationService, AndroidSystemNotificationService>();
+#endif
 
         return builder.Build();
     }

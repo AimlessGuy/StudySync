@@ -10,6 +10,8 @@ namespace StudySync.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
+    private readonly AuthService _authService;
+    private readonly NotificationService _notificationService;
 
     [ObservableProperty]
     private ObservableCollection<Note> recentNotes = new();
@@ -20,14 +22,30 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isEmpty;
 
-    public MainViewModel(DatabaseService databaseService)
+    [ObservableProperty]
+    private string accountLabel = "Account";
+
+    [ObservableProperty]
+    private int unreadNotificationCount;
+
+    public string NotificationsLabel =>
+        UnreadNotificationCount > 0 ? $"Notifications ({UnreadNotificationCount})" : "Notifications";
+
+    public MainViewModel(DatabaseService databaseService, AuthService authService, NotificationService notificationService)
     {
         _databaseService = databaseService;
+        _authService = authService;
+        _notificationService = notificationService;
     }
 
     [RelayCommand]
     public async Task LoadNotesAsync()
     {
+        var session = await _authService.GetCurrentSessionAsync();
+        AccountLabel = session?.DisplayName ?? "Account";
+        UnreadNotificationCount = await _notificationService.GetUnreadCountAsync();
+        OnPropertyChanged(nameof(NotificationsLabel));
+
         var all = await _databaseService.GetNotesAsync();
         NoteCount = all.Count;
         RecentNotes.Clear();
@@ -62,6 +80,18 @@ public partial class MainViewModel : ObservableObject
     private async Task GoToSections()
     {
         await Shell.Current.GoToAsync(nameof(Views.SectionsPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToAccount()
+    {
+        await Shell.Current.GoToAsync(nameof(Views.AccountPage));
+    }
+
+    [RelayCommand]
+    private async Task GoToNotifications()
+    {
+        await Shell.Current.GoToAsync(nameof(Views.NotificationsPage));
     }
 
     [RelayCommand]

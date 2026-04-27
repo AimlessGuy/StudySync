@@ -4,105 +4,272 @@
              xmlns:viewModels="clr-namespace:StudySync.ViewModels"
              xmlns:models="clr-namespace:StudySync.Models"
              x:Class="StudySync.Views.VaultPage"
+             x:Name="VaultPageRoot"
              x:DataType="viewModels:VaultViewModel"
              Title="My Vault"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="Auto,*"
-          Padding="16"
-          RowSpacing="12">
+    <ScrollView>
+        <VerticalStackLayout Padding="16"
+                             Spacing="14">
 
-        <Border Grid.Row="0"
-                BackgroundColor="{DynamicResource Primary}"
-                StrokeThickness="0"
-                Padding="16">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="12" />
-            </Border.StrokeShape>
-
-            <VerticalStackLayout Spacing="4">
-                <Label Text="My Notes"
-                       TextColor="White"
-                       FontSize="18"
-                       FontAttributes="Bold" />
-                <Label Text="{Binding NoteCount, StringFormat='You have {0} saved notes'}"
-                       TextColor="White"
-                       FontSize="14" />
-            </VerticalStackLayout>
-        </Border>
-
-        <CollectionView x:Name="NotesCollection"
-                        Grid.Row="1"
-                        ItemsSource="{Binding Notes}"
-                        SelectionMode="Single"
-                        Margin="0,8,0,0">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     Spacing="12">
-                    <Label Text="No notes yet"
-                           FontSize="16"
-                           TextColor="{DynamicResource Gray900}"
-                           HorizontalOptions="Center" />
-                    <Label Text="Tap the camera to capture your first note"
-                           TextColor="{DynamicResource Gray500}"
-                           HorizontalOptions="Center" />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Note">
-                    <Border Margin="0,0,0,8"
-                            Padding="16"
-                            BackgroundColor="{DynamicResource Surface}"
-                            StrokeThickness="0">
+            <Border Style="{StaticResource HeroBorderStyle}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="*,Auto"
+                      RowDefinitions="Auto,Auto,Auto">
+                    <Label Text="{Binding CollectionTitle}"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Gray100}" />
+                    <Border Grid.Column="1"
+                            BackgroundColor="{DynamicResource AccentGlow}"
+                            Padding="10,6"
+                            StrokeThickness="0"
+                            VerticalOptions="Start">
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12" />
+                            <RoundRectangle CornerRadius="16" />
                         </Border.StrokeShape>
-
-                        <Grid RowDefinitions="Auto,Auto,Auto"
-                              ColumnDefinitions="*,Auto"
-                              RowSpacing="4">
-                            <Label Grid.Row="0"
-                                   Grid.Column="0"
-                                   Text="{Binding Title}"
-                                   TextColor="{DynamicResource Primary}"
-                                   FontAttributes="Bold"
-                                   FontSize="16"
-                                   LineBreakMode="TailTruncation" />
-
-                            <Label Grid.Row="0"
-                                   Grid.Column="1"
-                                   Text="{Binding TimeDisplay}"
-                                   TextColor="{DynamicResource Gray500}"
-                                   FontSize="12"
-                                   HorizontalOptions="End" />
-
-                            <Label Grid.Row="1"
-                                   Grid.ColumnSpan="2"
-                                   Text="{Binding PreviewText}"
-                                   TextColor="{DynamicResource Gray900}"
-                                   MaxLines="2"
-                                   Margin="0,4,0,4"
-                                   LineBreakMode="TailTruncation"
-                                   FontSize="14" />
-
-                            <HorizontalStackLayout Grid.Row="2"
-                                                   Grid.ColumnSpan="2"
-                                                   Spacing="8">
-                                <Label Text="{Binding CourseCode}"
-                                       TextColor="{DynamicResource Gray600}"
-                                       FontSize="12" />
-                                <Label Text="•"
-                                       TextColor="{DynamicResource Gray600}" />
-                                <Label Text="{Binding ContentType}"
-                                       TextColor="{DynamicResource Gray600}"
-                                       FontSize="12" />
-                            </HorizontalStackLayout>
-                        </Grid>
+                        <Label Text="{Binding NoteCount, StringFormat='{}{0} notes'}"
+                               Style="{StaticResource ChipLabel}" />
                     </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Grid>
+                    <Label Grid.Row="1"
+                           Grid.ColumnSpan="2"
+                           Text="{Binding CollectionSubtitle}"
+                           Margin="0,8,0,0"
+                           TextColor="{DynamicResource Gray300}" />
+                    <Label Grid.Row="2"
+                           Grid.ColumnSpan="2"
+                           Text="Save, sort, and revisit your best study notes in one place."
+                           Margin="0,12,0,0"
+                           Style="{StaticResource MetaLabel}" />
+                </Grid>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}"
+                    Padding="14">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Albums"
+                           Style="{StaticResource SectionTitle}" />
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="All Notes"
+                                Command="{Binding ShowAllNotesCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding IsAllNotesSelected}"
+                                             Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <Button Text="My Notes"
+                                Command="{Binding ShowMyNotesCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding IsMyNotesSelected}"
+                                             Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <Button Text="Liked Notes"
+                                Command="{Binding ShowLikedNotesCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding IsLikedNotesSelected}"
+                                             Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource CardBorderStyle}"
+                    Padding="14">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Notebooks"
+                                   Style="{StaticResource SectionTitle}" />
+                            <Label Text="Build your own personal playlists for study notes."
+                                   Style="{StaticResource MetaLabel}" />
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1"
+                                Text="+ New"
+                                Command="{Binding CreateNotebookCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Padding="12,6" />
+                    </Grid>
+
+                    <CollectionView ItemsSource="{Binding Notebooks}"
+                                    ItemsLayout="HorizontalList"
+                                    HeightRequest="54"
+                                    IsVisible="{Binding HasNotebooks}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Notebook">
+                                <Button x:DataType="{x:Null}"
+                                        Text="{Binding Name}"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding Source={x:Reference VaultPageRoot}, Path=BindingContext.SelectNotebookCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Padding="14,8">
+                                    <Button.Triggers>
+                                        <MultiTrigger TargetType="Button">
+                                            <MultiTrigger.Conditions>
+                                                <BindingCondition Binding="{Binding Source={x:Reference VaultPageRoot}, Path=BindingContext.IsNotebookMode}" Value="True" />
+                                                <BindingCondition Binding="{Binding Source={x:Reference VaultPageRoot}, Path=BindingContext.SelectedNotebookName}" Value="{Binding Name}" />
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                                            <Setter Property="BorderColor" Value="{DynamicResource Primary}" />
+                                            <Setter Property="TextColor" Value="White" />
+                                        </MultiTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Label Text="Create a notebook to start curating your own collections."
+                           TextColor="{DynamicResource Gray500}"
+                           FontSize="12"
+                           IsVisible="{Binding HasNoNotebooks}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Notes}"
+                                 Spacing="12">
+                <BindableLayout.EmptyView>
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            Padding="26">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="20" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                             VerticalOptions="Center"
+                                             Spacing="8">
+                            <Label Text="No notes here yet"
+                                   FontSize="18"
+                                   TextColor="{DynamicResource Gray100}"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Save notes, like shared posts, or create a notebook to start building your vault."
+                                   TextColor="{DynamicResource Gray400}"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </BindableLayout.EmptyView>
+
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:Note">
+                        <Border Style="{StaticResource CardBorderStyle}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="22" />
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer x:DataType="{x:Null}"
+                                                      Command="{Binding Source={x:Reference VaultPageRoot}, Path=BindingContext.SelectNoteCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
+                            <Grid RowDefinitions="Auto,Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  RowSpacing="8">
+                                <Label Text="{Binding Title}"
+                                       FontAttributes="Bold"
+                                       FontSize="18"
+                                       LineBreakMode="TailTruncation"
+                                       TextColor="{DynamicResource Gray100}" />
+
+                                <HorizontalStackLayout Grid.Column="1"
+                                                       Spacing="8"
+                                                       HorizontalOptions="End"
+                                                       VerticalOptions="Start">
+                                    <Label Text="{Binding TimeDisplay}"
+                                           Style="{StaticResource MetaLabel}"
+                                           VerticalOptions="Center" />
+                                    <Button x:DataType="{x:Null}"
+                                            Text="⋮"
+                                            Command="{Binding Source={x:Reference VaultPageRoot}, Path=BindingContext.ShowNoteActionsCommand}"
+                                            CommandParameter="{Binding .}"
+                                            Style="{StaticResource GhostButtonStyle}"
+                                            FontSize="18"
+                                            Padding="10,4"
+                                            MinimumHeightRequest="34"
+                                            MinimumWidthRequest="34" />
+                                </HorizontalStackLayout>
+
+                                <Label Grid.Row="1"
+                                       Grid.ColumnSpan="2"
+                                       Text="{Binding PreviewText}"
+                                       FontSize="14"
+                                       MaxLines="3"
+                                       LineBreakMode="TailTruncation"
+                                       TextColor="{DynamicResource Gray200}" />
+
+                                <HorizontalStackLayout Grid.Row="2"
+                                                       Grid.ColumnSpan="2"
+                                                       Spacing="8">
+                                    <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                            Padding="10,6"
+                                            StrokeThickness="0">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="14" />
+                                        </Border.StrokeShape>
+                                        <Label Text="{Binding CourseCode}"
+                                               Style="{StaticResource ChipLabel}" />
+                                    </Border>
+                                    <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                            Padding="10,6"
+                                            StrokeThickness="0">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="14" />
+                                        </Border.StrokeShape>
+                                        <Label Text="{Binding ContentType}"
+                                               Style="{StaticResource ChipLabel}" />
+                                    </Border>
+                                    <Border BackgroundColor="{DynamicResource AccentGlow}"
+                                            Padding="10,6"
+                                            StrokeThickness="0"
+                                            IsVisible="{Binding IsLiked}">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="14" />
+                                        </Border.StrokeShape>
+                                        <Label Text="Liked"
+                                               Style="{StaticResource ChipLabel}"
+                                               TextColor="{DynamicResource PrimaryDarkText}" />
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

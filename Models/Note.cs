@@ -21,6 +21,12 @@ public class Note : ObservableObject
 
     public bool IsAnonymous { get; set; }
 
+    public string SourcePostId { get; set; } = string.Empty;
+
+    public bool IsLiked { get; set; }
+
+    public bool IsVaultSaved { get; set; } = true;
+
     private int _upvotes;
     public int Upvotes
     {

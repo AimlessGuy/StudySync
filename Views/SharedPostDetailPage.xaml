@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             x:Class="StudySync.Views.SharedPostDetailPage"
+             x:DataType="viewModels:SharedPostDetailViewModel"
+             Title="{Binding PostTitle}"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="16"
+          RowSpacing="12">
+        <Border Grid.Row="0"
+                BackgroundColor="{DynamicResource Surface}"
+                StrokeThickness="0"
+                Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{Binding PostTitle}"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="{DynamicResource Primary}" />
+
+                <HorizontalStackLayout Spacing="10">
+                    <Label Text="{Binding PrimarySubjectTag}"
+                           FontSize="13"
+                           TextColor="{DynamicResource Gray600}" />
+                    <Label Text="Anonymous"
+                           FontSize="13"
+                           TextColor="{DynamicResource Gray500}"
+                           IsVisible="{Binding IsAnonymous}" />
+                </HorizontalStackLayout>
+
+                <Label Text="{Binding SectionSummary, StringFormat='Sections: {0}'}"
+                       FontSize="13"
+                       TextColor="{DynamicResource Gray600}" />
+
+                <Label Text="{Binding TagSummary, StringFormat='Tags: {0}'}"
+                       FontSize="13"
+                       TextColor="{DynamicResource Gray500}" />
+
+                <Label Text="{Binding CreatedLabel, StringFormat='Shared: {0}'}"
+                       FontSize="12"
+                       TextColor="{DynamicResource Gray500}" />
+
+                <Button Text="{Binding UpvoteButtonText}"
+                        Command="{Binding UpvotePostCommand}"
+                        BackgroundColor="{DynamicResource SurfaceMuted}"
+                        TextColor="{DynamicResource Gray900}"
+                        HorizontalOptions="Start"
+                        Padding="12,6">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding HasUpvoted}"
+                                     Value="True">
+                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Grid.Row="1"
+                BackgroundColor="{DynamicResource Surface}"
+                StrokeThickness="0"
+                Padding="16">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+
+            <Grid RowDefinitions="*,Auto"
+                  RowSpacing="12">
+                <ScrollView Grid.Row="0">
+                    <Label Text="{Binding PostText}"
+                           TextColor="{DynamicResource Gray900}"
+                           LineBreakMode="WordWrap" />
+                </ScrollView>
+
+                <Grid Grid.Row="1"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="8">
+                    <Button Grid.Column="0"
+                            Text="Save to Vault"
+                            Command="{Binding SaveToVaultCommand}"
+                            BackgroundColor="{DynamicResource Primary}"
+                            TextColor="White" />
+                    <Button Grid.Column="1"
+                            Text="Share Externally"
+                            Command="{Binding SharePostCommand}"
+                            BackgroundColor="{DynamicResource Secondary}"
+                            TextColor="{DynamicResource Gray900}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

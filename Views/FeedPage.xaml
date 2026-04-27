@@ -9,101 +9,185 @@
              Title="Class Feed"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="Auto,*"
+    <Grid RowDefinitions="Auto,Auto,*"
           Padding="16"
-          RowSpacing="12">
+          RowSpacing="14">
 
         <Border Grid.Row="0"
-                BackgroundColor="{DynamicResource Primary}"
-                StrokeThickness="0"
-                Padding="16">
+                Style="{StaticResource HeroBorderStyle}">
             <Border.StrokeShape>
-                <RoundRectangle CornerRadius="12" />
+                <RoundRectangle CornerRadius="24" />
             </Border.StrokeShape>
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="6">
                 <Label Text="Class Feed"
-                       TextColor="White"
-                       FontSize="20"
-                       FontAttributes="Bold" />
-                <Label Text="{Binding SharedCount, StringFormat='{0} notes shared by classmates'}"
-                       TextColor="White"
-                       FontSize="13" />
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{DynamicResource Gray100}" />
+                <Label Text="Browse shared notes from all the sections you joined."
+                       TextColor="{DynamicResource Gray300}" />
             </VerticalStackLayout>
         </Border>
 
-        <CollectionView x:Name="FeedCollection"
-                        Grid.Row="1"
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Padding="14">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20" />
+            </Border.StrokeShape>
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="12"
+                  RowDefinitions="Auto,Auto"
+                  RowSpacing="8">
+                <Label Text="Subject"
+                       Style="{StaticResource MetaLabel}" />
+                <Label Grid.Column="1"
+                       Text="Section"
+                       Style="{StaticResource MetaLabel}" />
+                <Picker Grid.Row="1"
+                        Title="All subjects"
+                        ItemsSource="{Binding SubjectFilters}"
+                        SelectedItem="{Binding SelectedSubjectFilter}" />
+                <Picker Grid.Row="1"
+                        Grid.Column="1"
+                        Title="All sections"
+                        ItemsSource="{Binding SectionFilters}"
+                        SelectedItem="{Binding SelectedSectionFilter}" />
+            </Grid>
+        </Border>
+
+        <CollectionView Grid.Row="2"
                         ItemsSource="{Binding SharedPosts}"
-                        Margin="0,8,0,0">
+                        Margin="0,2,0,0">
 
             <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     Spacing="12">
-                    <Label Text="No shared notes yet"
-                           FontSize="16"
-                           TextColor="{DynamicResource Gray900}"
-                           HorizontalOptions="Center" />
-                    <Label Text="Be the first to share from the camera!"
-                           TextColor="{DynamicResource Gray500}"
-                           HorizontalOptions="Center" />
-                </VerticalStackLayout>
+                <Border Style="{StaticResource CardBorderStyle}"
+                        Padding="26">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="8">
+                        <Label Text="No shared notes yet"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray100}" />
+                        <Label Text="Be the first to share from the camera."
+                               HorizontalTextAlignment="Center"
+                               TextColor="{DynamicResource Gray400}" />
+                    </VerticalStackLayout>
+                </Border>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:SectionPost">
-                    <Border Margin="0,0,0,10"
-                            Padding="16"
-                            BackgroundColor="{DynamicResource Surface}"
-                            StrokeThickness="0">
+                    <Border Margin="0,0,0,12"
+                            Style="{StaticResource CardBorderStyle}">
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12" />
+                            <RoundRectangle CornerRadius="22" />
                         </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer x:DataType="{x:Null}"
+                                                  Command="{Binding Source={x:Reference FeedPageRoot}, Path=BindingContext.OpenPostCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
 
-                        <Grid RowDefinitions="Auto,Auto,Auto"
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                               ColumnDefinitions="*,Auto"
-                              RowSpacing="6">
+                              RowSpacing="8">
 
-                            <Label Grid.Row="0"
-                                   Grid.Column="0"
-                                   Text="{Binding PrimarySubjectTag}"
-                                   TextColor="{DynamicResource Primary}"
+                            <Label Text="{Binding DisplayTitle}"
                                    FontAttributes="Bold"
-                                   FontSize="16" />
+                                   FontSize="18"
+                                   TextColor="{DynamicResource Gray100}" />
 
-                            <Label Grid.Row="0"
-                                   Grid.Column="1"
-                                   Text="{Binding TimeDisplay}"
-                                   TextColor="{DynamicResource Gray500}"
-                                   FontSize="12"
-                                   HorizontalOptions="End" />
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="8"
+                                                   HorizontalOptions="End"
+                                                   VerticalOptions="Start">
+                                <Label Text="{Binding TimeDisplay}"
+                                       Style="{StaticResource MetaLabel}"
+                                       VerticalOptions="Center" />
+                                <Button x:DataType="{x:Null}"
+                                        Text="⋮"
+                                        Command="{Binding Source={x:Reference FeedPageRoot}, Path=BindingContext.ShowPostActionsCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        FontSize="18"
+                                        Padding="10,4"
+                                        MinimumHeightRequest="34"
+                                        MinimumWidthRequest="34" />
+                            </HorizontalStackLayout>
 
                             <Label Grid.Row="1"
                                    Grid.ColumnSpan="2"
-                                   Text="{Binding PreviewText}"
-                                   TextColor="{DynamicResource Gray900}"
-                                   MaxLines="3"
-                                   LineBreakMode="TailTruncation"
-                                   FontSize="14" />
-
-                            <HorizontalStackLayout Grid.Row="2"
-                                                   Grid.Column="0"
-                                                   Spacing="8">
-                                <Label Text="{Binding SectionSummary}"
-                                       TextColor="{DynamicResource Gray600}"
-                                       FontSize="12" />
-                                <Label Text="Anonymous"
-                                       TextColor="{DynamicResource Gray500}"
-                                       FontSize="12"
-                                       IsVisible="{Binding IsAnonymous}" />
-                            </HorizontalStackLayout>
+                                   Text="{Binding PosterDisplayName}"
+                                   Style="{StaticResource MetaLabel}" />
 
                             <Label Grid.Row="2"
-                                   Grid.Column="1"
-                                   Text="{Binding TagSummary, StringFormat='Tags: {0}'}"
-                                   TextColor="{DynamicResource Gray500}"
-                                   FontSize="12"
-                                   HorizontalOptions="End" />
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding PreviewText}"
+                                   FontSize="14"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="3"
+                                   TextColor="{DynamicResource Gray200}" />
+
+                            <HorizontalStackLayout Grid.Row="3"
+                                                   Grid.ColumnSpan="2"
+                                                   BindableLayout.ItemsSource="{Binding SecondaryTags}"
+                                                   Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                                Padding="10,6"
+                                                StrokeThickness="0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="14" />
+                                            </Border.StrokeShape>
+                                            <Label Text="{Binding .}"
+                                                   Style="{StaticResource ChipLabel}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
+
+                            <Grid Grid.Row="4"
+                                  Grid.ColumnSpan="2"
+                                  ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="10">
+                                <Button x:DataType="{x:Null}"
+                                        Text="{Binding UpvoteButtonText}"
+                                        Command="{Binding Source={x:Reference FeedPageRoot}, Path=BindingContext.UpvotePostCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        FontSize="12"
+                                        Padding="12,6">
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding HasUpvoted}"
+                                                     Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                                <Label Grid.Column="1"
+                                       Text="{Binding SectionSummary}"
+                                       Style="{StaticResource MetaLabel}"
+                                       VerticalOptions="Center" />
+                                <Border Grid.Column="2"
+                                        BackgroundColor="{DynamicResource AccentGlow}"
+                                        IsVisible="{Binding IsAnonymous}"
+                                        Padding="10,6"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="14" />
+                                    </Border.StrokeShape>
+                                    <Label Text="Anonymous"
+                                           Style="{StaticResource ChipLabel}" />
+                                </Border>
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>

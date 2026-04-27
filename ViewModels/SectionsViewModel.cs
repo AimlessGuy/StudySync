@@ -183,6 +183,83 @@ public partial class SectionsViewModel : ObservableObject
         });
     }
 
+    [RelayCommand]
+    private async Task OpenSectionAsync(Section section)
+    {
+        if (section == null)
+            return;
+
+        await Shell.Current.GoToAsync(
+            $"{nameof(Views.SectionDetailPage)}?sectionName={Uri.EscapeDataString(section.Name)}&inviteCode={Uri.EscapeDataString(section.InviteCode)}");
+    }
+
+    [RelayCommand]
+    private async Task ShowSectionActionsAsync(Section section)
+    {
+        if (section == null)
+            return;
+
+        var action = await Shell.Current.DisplayActionSheet(
+            section.Name,
+            "Cancel",
+            null,
+            "Open Section",
+            "Copy Code",
+            "Share Invite",
+            "Leave Section");
+
+        switch (action)
+        {
+            case "Open Section":
+                await OpenSectionAsync(section);
+                break;
+            case "Copy Code":
+                await CopyInviteCodeAsync(section);
+                break;
+            case "Share Invite":
+                await ShareInviteAsync(section);
+                break;
+            case "Leave Section":
+                await LeaveSectionAsync(section);
+                break;
+        }
+    }
+
+    [RelayCommand]
+    private async Task LeaveSectionAsync(Section section)
+    {
+        if (section == null)
+            return;
+
+        bool shouldLeave = await Shell.Current.DisplayAlert(
+            "Leave section",
+            $"Leave {section.Name}? You can always rejoin later with the invite code.",
+            "Leave",
+            "Cancel");
+
+        if (!shouldLeave)
+            return;
+
+        try
+        {
+            IsBusy = true;
+            await _sectionCloudService.LeaveSectionAsync(section.InviteCode);
+            await _databaseService.DeleteSectionAsync(section);
+            await LoadSectionsAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert(
+                GetFriendlyTitle(ex),
+                GetFriendlyMessage("leaving the section", ex),
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     private async Task<string> GenerateUniqueInviteCodeAsync()
     {
         while (true)

@@ -9,207 +9,271 @@
              Title="StudySync"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
-          Padding="16"
-          RowSpacing="8">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="16"
+                                 Spacing="14">
 
-        <Border Grid.Row="0"
-                Padding="20"
-                BackgroundColor="{DynamicResource Primary}"
-                StrokeThickness="0">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="12" />
-            </Border.StrokeShape>
-            <VerticalStackLayout Spacing="8">
-                <Label Text="Welcome to StudySync"
-                       TextColor="White"
-                       FontSize="24"
-                       FontAttributes="Bold" />
-                <Label Text="Snap notes, extract text, and share with classmates"
-                       TextColor="White"
-                       FontSize="14" />
-            </VerticalStackLayout>
-        </Border>
+                <Border Style="{StaticResource HeroBorderStyle}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="24" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="*,Auto"
+                          RowDefinitions="Auto,Auto,Auto,Auto">
+                        <Label Text="StudySync"
+                               FontSize="32"
+                               FontAttributes="Bold"
+                               TextColor="{DynamicResource Gray100}" />
 
-        <Grid Grid.Row="1"
-              ColumnDefinitions="*,*"
-              Margin="0,16,0,16">
+                        <Border Grid.Column="1"
+                                BackgroundColor="{DynamicResource AccentGlow}"
+                                Padding="10,6"
+                                StrokeThickness="0"
+                                VerticalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="18" />
+                            </Border.StrokeShape>
+                            <Label Text="{Binding NotificationsLabel}"
+                                   Style="{StaticResource ChipLabel}" />
+                        </Border>
 
-            <Border Grid.Column="0"
-                    Margin="0,0,4,0"
-                    HeightRequest="140"
-                    BackgroundColor="{DynamicResource Surface}"
-                    StrokeThickness="0">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="12" />
-                </Border.StrokeShape>
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GoToCameraCommand}" />
-                </Border.GestureRecognizers>
-                <Grid>
-                    <VerticalStackLayout HorizontalOptions="Center"
-                                         VerticalOptions="Center"
-                                         Spacing="6">
-                        <Label Text="Camera"
-                               TextColor="{DynamicResource Gray900}"
+                        <Label Grid.Row="1"
+                               Text="{Binding AccountLabel}"
+                               Margin="0,6,0,0"
                                FontSize="18"
                                FontAttributes="Bold"
-                               HorizontalOptions="Center" />
-                        <Label Text="Capture a new note"
-                               TextColor="{DynamicResource Gray600}"
-                               FontSize="13"
-                               HorizontalOptions="Center" />
-                    </VerticalStackLayout>
-                </Grid>
-            </Border>
+                               TextColor="{DynamicResource Gray200}" />
 
-            <Border Grid.Column="1"
-                    Margin="4,0,0,0"
-                    HeightRequest="140"
-                    BackgroundColor="{DynamicResource Surface}"
-                    StrokeThickness="0">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="12" />
-                </Border.StrokeShape>
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GoToVaultCommand}" />
-                </Border.GestureRecognizers>
-                <Grid>
-                    <VerticalStackLayout HorizontalOptions="Center"
-                                         VerticalOptions="Center"
-                                         Spacing="6">
-                        <Label Text="My Vault"
-                               TextColor="{DynamicResource Gray900}"
-                               FontSize="18"
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center" />
-                        <Label Text="{Binding NoteCount, StringFormat='{0} notes saved'}"
-                               TextColor="{DynamicResource Gray600}"
-                               FontSize="13"
-                               HorizontalOptions="Center" />
-                    </VerticalStackLayout>
-                </Grid>
-            </Border>
-        </Grid>
+                        <Label Grid.Row="2"
+                               Text="Capture class notes, clean them up, and share them with the right section."
+                               Margin="0,10,0,0"
+                               FontSize="14"
+                               TextColor="{DynamicResource Gray300}" />
 
-        <Label Grid.Row="2"
-               Text="Recent Activity"
-               FontSize="18"
-               FontAttributes="Bold"
-               TextColor="{DynamicResource Gray900}"
-               Margin="0,8,0,0" />
+                        <HorizontalStackLayout Grid.Row="3"
+                                               Spacing="10"
+                                               Margin="0,18,0,0">
+                            <Button Text="Manage Account"
+                                    Command="{Binding GoToAccountCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Padding="16,10" />
+                            <Button Text="Open Notifications"
+                                    Command="{Binding GoToNotificationsCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Padding="16,10" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Border>
 
-        <CollectionView Grid.Row="3"
-                        ItemsSource="{Binding RecentNotes}"
-                        Margin="0,8,0,0">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center"
-                                     VerticalOptions="Center"
-                                     Spacing="8">
-                    <Label Text="No notes yet"
-                           FontSize="16"
-                           TextColor="{DynamicResource Gray900}"
-                           HorizontalOptions="Center" />
-                    <Label Text="Use the camera card above to capture your first note."
-                           TextColor="{DynamicResource Gray500}"
-                           HorizontalOptions="Center" />
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="12">
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Note">
-                    <Border Margin="0,0,0,8"
-                            Padding="16"
-                            BackgroundColor="{DynamicResource Surface}"
-                            StrokeThickness="0">
+                    <Border Grid.Column="0"
+                            MinimumHeightRequest="188"
+                            Style="{StaticResource CardBorderStyle}">
                         <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="8" />
+                            <RoundRectangle CornerRadius="22" />
                         </Border.StrokeShape>
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer x:DataType="{x:Null}"
-                                                  Command="{Binding Source={x:Reference MainPageRoot}, Path=BindingContext.SelectNoteCommand}"
-                                                  CommandParameter="{Binding .}" />
+                            <TapGestureRecognizer Command="{Binding GoToCameraCommand}" />
                         </Border.GestureRecognizers>
-                        <Grid RowDefinitions="Auto,Auto,Auto"
-                              ColumnDefinitions="*,Auto"
-                              RowSpacing="4">
-                            <Label Grid.Row="0"
-                                   Grid.Column="0"
-                                   Text="{Binding CourseCode}"
-                                   TextColor="{DynamicResource Primary}"
-                                   FontAttributes="Bold"
-                                   FontSize="16" />
-                            <Label Grid.Row="0"
-                                   Grid.Column="1"
-                                   Text="{Binding TimeDisplay}"
-                                   TextColor="{DynamicResource Gray500}"
-                                   FontSize="12"
-                                   HorizontalOptions="End" />
-                            <Label Grid.Row="1"
-                                   Grid.ColumnSpan="2"
-                                   Text="{Binding PreviewText}"
-                                   TextColor="{DynamicResource Gray900}"
-                                   MaxLines="2"
-                                   Margin="0,4,0,4"
-                                   LineBreakMode="TailTruncation" />
-                            <Label Grid.Row="2"
-                                   Grid.Column="0"
-                                   Text="{Binding ContentType}"
-                                   TextColor="{DynamicResource Gray600}"
-                                   FontSize="12" />
-                            <Label Grid.Row="2"
-                                   Grid.Column="1"
-                                   Text="{Binding IsShared, StringFormat='Shared: {0}'}"
-                                   TextColor="{DynamicResource Gray600}"
-                                   FontSize="12"
-                                   HorizontalOptions="End" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                        <VerticalStackLayout Spacing="12">
+                            <Border BackgroundColor="{DynamicResource AccentGlow}"
+                                    HorizontalOptions="Start"
+                                    Padding="12"
+                                    StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="18" />
+                                </Border.StrokeShape>
+                                <Label Text="📷"
+                                       FontSize="22"
+                                       TextColor="{DynamicResource Gray100}" />
+                            </Border>
 
-        <Border Grid.Row="4"
-                StrokeThickness="1"
-                Stroke="{DynamicResource Gray200}"
-                Padding="8"
+                            <Label Text="Camera"
+                                   Style="{StaticResource SectionTitle}" />
+                            <Label Text="Scan notes, stack pages, and run OCR."
+                                   FontSize="13"
+                                   LineBreakMode="WordWrap"
+                                   TextColor="{DynamicResource Gray300}" />
+                            <Label Text="Tap to capture"
+                                   Margin="0,6,0,0"
+                                   Style="{StaticResource MetaLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            MinimumHeightRequest="188"
+                            Style="{StaticResource CardBorderStyle}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="22" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToVaultCommand}" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="12">
+                            <Border BackgroundColor="{DynamicResource AccentGlow}"
+                                    HorizontalOptions="Start"
+                                    Padding="12"
+                                    StrokeThickness="0">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="18" />
+                                </Border.StrokeShape>
+                                <Label Text="📚"
+                                       FontSize="22"
+                                       TextColor="{DynamicResource Gray100}" />
+                            </Border>
+
+                            <Label Text="My Vault"
+                                   Style="{StaticResource SectionTitle}" />
+                            <Label Text="{Binding NoteCount, StringFormat='{0} saved notes across albums and notebooks.'}"
+                                   FontSize="13"
+                                   LineBreakMode="WordWrap"
+                                   TextColor="{DynamicResource Gray300}" />
+                            <Label Text="Open notebooks and albums"
+                                   Margin="0,6,0,0"
+                                   Style="{StaticResource MetaLabel}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto"
+                      Margin="0,4,0,0">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Recent Activity"
+                               Style="{StaticResource SectionTitle}" />
+                        <Label Text="Jump back into your latest saved notes."
+                               Style="{StaticResource MetaLabel}" />
+                    </VerticalStackLayout>
+
+                    <Border Grid.Column="1"
+                            BackgroundColor="{DynamicResource SurfaceMuted}"
+                            Padding="10,6"
+                            StrokeThickness="0"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+                        <Label Text="{Binding NoteCount, StringFormat='{0} total'}"
+                               Style="{StaticResource ChipLabel}" />
+                    </Border>
+                </Grid>
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding RecentNotes}"
+                                     Spacing="8">
+                    <BindableLayout.EmptyView>
+                        <Border Style="{StaticResource CardBorderStyle}"
+                                Padding="26">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                            <VerticalStackLayout HorizontalOptions="Center"
+                                                 VerticalOptions="Center"
+                                                 Spacing="8">
+                                <Label Text="No notes yet"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       HorizontalOptions="Center"
+                                       TextColor="{DynamicResource Gray100}" />
+                                <Label Text="Use the camera card above to build your first study note."
+                                       HorizontalTextAlignment="Center"
+                                       TextColor="{DynamicResource Gray400}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </BindableLayout.EmptyView>
+
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Note">
+                            <Border Style="{StaticResource CardBorderStyle}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="18" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer x:DataType="{x:Null}"
+                                                          Command="{Binding Source={x:Reference MainPageRoot}, Path=BindingContext.SelectNoteCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid RowDefinitions="Auto,Auto,Auto"
+                                      ColumnDefinitions="*,Auto"
+                                      RowSpacing="8">
+                                    <Label Grid.Row="0"
+                                           Text="{Binding CourseCode}"
+                                           FontAttributes="Bold"
+                                           FontSize="16"
+                                           TextColor="{DynamicResource Primary}" />
+                                    <Label Grid.Row="0"
+                                           Grid.Column="1"
+                                           Text="{Binding TimeDisplay}"
+                                           Style="{StaticResource MetaLabel}"
+                                           HorizontalOptions="End" />
+                                    <Label Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Text="{Binding PreviewText}"
+                                           LineBreakMode="TailTruncation"
+                                           MaxLines="2"
+                                           TextColor="{DynamicResource Gray100}" />
+                                    <HorizontalStackLayout Grid.Row="2"
+                                                           Grid.ColumnSpan="2"
+                                                           Spacing="8">
+                                        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                                Padding="10,6"
+                                                StrokeThickness="0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="14" />
+                                            </Border.StrokeShape>
+                                            <Label Text="{Binding ContentType}"
+                                                   Style="{StaticResource ChipLabel}" />
+                                        </Border>
+                                        <Label Text="{Binding IsShared, StringFormat='Shared: {0}'}"
+                                               Style="{StaticResource MetaLabel}"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="1"
                 Margin="0,8,0,0"
-                BackgroundColor="{DynamicResource Surface}">
+                Padding="10"
+                Style="{StaticResource CardBorderStyle}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="22" />
+            </Border.StrokeShape>
             <Grid ColumnDefinitions="*,*">
                 <VerticalStackLayout Grid.Column="0"
                                      HorizontalOptions="Center"
-                                     Spacing="4"
-                                     BackgroundColor="Transparent">
+                                     Spacing="4">
                     <VerticalStackLayout.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToFeedCommand}" />
                     </VerticalStackLayout.GestureRecognizers>
                     <Label Text="Feed"
-                           TextColor="{DynamicResource Gray900}"
-                           FontSize="14"
                            FontAttributes="Bold"
-                           HorizontalOptions="Center" />
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource Gray100}" />
                     <Label Text="All shared notes"
-                           TextColor="{DynamicResource Gray500}"
                            FontSize="12"
-                           HorizontalOptions="Center" />
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource Gray400}" />
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="1"
                                      HorizontalOptions="Center"
-                                     Spacing="4"
-                                     BackgroundColor="Transparent">
+                                     Spacing="4">
                     <VerticalStackLayout.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding GoToSectionsCommand}" />
                     </VerticalStackLayout.GestureRecognizers>
                     <Label Text="Sections"
-                           TextColor="{DynamicResource Gray900}"
-                           FontSize="14"
                            FontAttributes="Bold"
-                           HorizontalOptions="Center" />
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource Gray100}" />
                     <Label Text="Your joined groups"
-                           TextColor="{DynamicResource Gray500}"
                            FontSize="12"
-                           HorizontalOptions="Center" />
+                           HorizontalOptions="Center"
+                           TextColor="{DynamicResource Gray400}" />
                 </VerticalStackLayout>
             </Grid>
         </Border>

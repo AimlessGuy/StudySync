@@ -1,8 +1,11 @@
 using StudySync.ViewModels;
+using System.Text.Json;
 
 namespace StudySync.Views;
 
 [QueryProperty(nameof(ImagePath), "imagePath")]
+[QueryProperty(nameof(ImagePaths), "imagePaths")]
+[QueryProperty(nameof(SectionInviteCode), "sectionInviteCode")]
 public partial class ResultPage : ContentPage
 {
     public ResultPage()
@@ -11,18 +14,39 @@ public partial class ResultPage : ContentPage
     }
 
     public string? ImagePath { get; set; }
+    public string? ImagePaths { get; set; }
+    public string? SectionInviteCode { get; set; }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
 
-        if (!string.IsNullOrEmpty(ImagePath))
+        var resolvedPaths = ResolveImagePaths();
+        if (resolvedPaths.Count > 0)
         {
-            // 1. Set BindingContext FIRST so all bindings (IsProcessing, OcrProgress, etc.) wire up
-            BindingContext = new ResultViewModel(ImagePath);
+            BindingContext = new ResultViewModel(resolvedPaths, SectionInviteCode);
 
-            // 2. Load image preview using x:Name reference (safe now that InitializeComponent ran)
-            CapturedImage.Source = ImageSource.FromFile(ImagePath);
+            CapturedImage.Source = ImageSource.FromFile(resolvedPaths[0]);
         }
+    }
+
+    private List<string> ResolveImagePaths()
+    {
+        if (!string.IsNullOrWhiteSpace(ImagePaths))
+        {
+            try
+            {
+                var paths = JsonSerializer.Deserialize<List<string>>(ImagePaths);
+                if (paths is { Count: > 0 })
+                    return paths;
+            }
+            catch
+            {
+            }
+        }
+
+        return !string.IsNullOrWhiteSpace(ImagePath)
+            ? new List<string> { ImagePath }
+            : new List<string>();
     }
 }

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             x:Class="StudySync.Views.AuthPage"
+             x:DataType="viewModels:AuthViewModel"
+             Title="Account"
+             BackgroundColor="{DynamicResource Background}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,48"
+                             Spacing="18">
+            <Border BackgroundColor="{DynamicResource Primary}"
+                    StrokeThickness="0"
+                    Padding="20">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding TitleText}"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="{Binding SubtitleText}"
+                           FontSize="14"
+                           TextColor="{DynamicResource Gray100}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border BackgroundColor="{DynamicResource Surface}"
+                    Stroke="{DynamicResource SurfaceBorder}"
+                    Padding="20">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Email"
+                           TextColor="{DynamicResource Gray300}"
+                           FontAttributes="Bold" />
+                    <Entry Text="{Binding Email}"
+                           Placeholder="you@example.com"
+                           Keyboard="Email" />
+
+                    <Label Text="Password"
+                           TextColor="{DynamicResource Gray300}"
+                           FontAttributes="Bold" />
+                    <Entry Text="{Binding Password}"
+                           Placeholder="Enter password"
+                           IsPassword="True" />
+
+                    <VerticalStackLayout Spacing="8"
+                                         IsVisible="{Binding ShowConfirmPassword}">
+                        <Label Text="Confirm password"
+                               TextColor="{DynamicResource Gray300}"
+                               FontAttributes="Bold" />
+                        <Entry Text="{Binding ConfirmPassword}"
+                               Placeholder="Confirm password"
+                               IsPassword="True" />
+                    </VerticalStackLayout>
+
+                    <Border BackgroundColor="#3A1720"
+                            StrokeThickness="0"
+                            Padding="12"
+                            IsVisible="{Binding HasError}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#FCA5A5"
+                               FontSize="12" />
+                    </Border>
+
+                    <Button Text="{Binding PrimaryActionText}"
+                            Command="{Binding PrimaryActionCommand}"
+                            IsEnabled="{Binding IsNotBusy}" />
+
+                    <Button Text="{Binding TogglePromptText}"
+                            Command="{Binding ToggleModeCommand}"
+                            BackgroundColor="{DynamicResource SurfaceMuted}"
+                            TextColor="{DynamicResource Gray100}" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

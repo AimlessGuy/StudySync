@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             x:Class="StudySync.Views.AccountPage"
+             x:DataType="viewModels:AccountViewModel"
+             Title="Account"
+             BackgroundColor="{DynamicResource Background}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16">
+            <Border BackgroundColor="{DynamicResource Surface}"
+                    Stroke="{DynamicResource SurfaceBorder}"
+                    Padding="20">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Your account"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Gray100}" />
+                    <Label Text="{Binding DisplayName}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="{DynamicResource Gray100}" />
+                    <Label Text="{Binding Email, StringFormat='Email: {0}'}"
+                           TextColor="{DynamicResource Gray300}" />
+                    <Label Text="{Binding UserId, StringFormat='User ID: {0}'}"
+                           TextColor="{DynamicResource Gray500}"
+                           FontSize="12" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Sign Out"
+                    Command="{Binding SignOutCommand}"
+                    BackgroundColor="#7F1D1D"
+                    TextColor="White" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

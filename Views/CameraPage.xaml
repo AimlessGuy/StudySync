@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:StudySync.Models"
              xmlns:viewModels="clr-namespace:StudySync.ViewModels"
              x:Class="StudySync.Views.CameraPage"
+             x:Name="CameraCapturePage"
              x:DataType="viewModels:CameraViewModel"
              Title="Capture Notes"
              BackgroundColor="{DynamicResource Background}">
 
-    <Grid RowDefinitions="*,Auto,Auto"
+    <Grid RowDefinitions="*,Auto,Auto,Auto,Auto"
           Padding="16"
           RowSpacing="16">
         <Border Grid.Row="0"
@@ -18,29 +20,144 @@
             </Border.StrokeShape>
 
             <Image x:Name="PreviewImage"
-                   Source="camera_icon.png"
+                   Source="{Binding PreviewSource}"
                    Aspect="AspectFit"
                    Margin="20"
                    HorizontalOptions="Center"
                    VerticalOptions="Center" />
         </Border>
 
-        <Button Grid.Row="1"
-                Text="Take Photo"
-                Command="{Binding TakePhotoCommand}"
-                BackgroundColor="{DynamicResource Primary}"
-                TextColor="White"
-                HeightRequest="60"
-                CornerRadius="12"
-                FontSize="18" />
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="8">
+            <Label Text="{Binding PageCountText}"
+                   TextColor="{DynamicResource Gray900}"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+            <Label Text="Add one or more pages, then process them together into a single note."
+                   TextColor="{DynamicResource Gray600}"
+                   FontSize="13"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
 
-        <Button Grid.Row="2"
-                Text="Choose from Gallery"
-                Command="{Binding PickPhotoCommand}"
-                BackgroundColor="{DynamicResource Secondary}"
-                TextColor="{DynamicResource Gray900}"
-                HeightRequest="60"
-                CornerRadius="12"
-                FontSize="16" />
+        <Grid Grid.Row="2"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="8">
+            <Button Grid.Column="0"
+                    Text="Take Photo"
+                    Command="{Binding TakePhotoCommand}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    HeightRequest="60"
+                    CornerRadius="12"
+                    FontSize="18" />
+
+            <Button Grid.Column="1"
+                    Text="Choose from Gallery"
+                    Command="{Binding PickPhotoCommand}"
+                    BackgroundColor="{DynamicResource Secondary}"
+                    TextColor="{DynamicResource Gray900}"
+                    HeightRequest="60"
+                    CornerRadius="12"
+                    FontSize="16" />
+        </Grid>
+
+        <Grid Grid.Row="3"
+              ColumnDefinitions="*,Auto"
+              ColumnSpacing="8">
+            <Button Grid.Column="0"
+                    Text="{Binding ProcessButtonText}"
+                    Command="{Binding ProcessPagesCommand}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    IsEnabled="{Binding HasCapturedPages}" />
+            <Button Grid.Column="1"
+                    Text="Clear"
+                    Command="{Binding ClearPagesCommand}"
+                    BackgroundColor="{DynamicResource SurfaceMuted}"
+                    TextColor="{DynamicResource Gray900}"
+                    HeightRequest="56"
+                    CornerRadius="12"
+                    IsEnabled="{Binding HasCapturedPages}" />
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="4"
+                             Spacing="8"
+                             IsVisible="{Binding HasCapturedPages}">
+            <Label Text="Pages"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Gray900}" />
+
+            <CollectionView ItemsSource="{Binding CapturedPages}"
+                            HeightRequest="168"
+                            ItemsLayout="HorizontalList"
+                            SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CapturedPageItem">
+                        <Border WidthRequest="140"
+                                Padding="8"
+                                Margin="0,0,12,0"
+                                BackgroundColor="{DynamicResource SurfaceMuted}"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10" />
+                            </Border.StrokeShape>
+
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="{Binding PageLabel}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{DynamicResource Gray900}" />
+
+                                <Image Source="{Binding ImagePath}"
+                                       HeightRequest="88"
+                                       Aspect="AspectFill">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={x:Reference CameraCapturePage}, Path=BindingContext.PreviewPageCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+
+                                <Grid ColumnDefinitions="Auto,Auto,*"
+                                      ColumnSpacing="6">
+                                    <Button Text="←"
+                                            FontSize="12"
+                                            HeightRequest="32"
+                                            WidthRequest="32"
+                                            Padding="0"
+                                            CornerRadius="8"
+                                            BackgroundColor="{DynamicResource Background}"
+                                            TextColor="{DynamicResource Gray900}"
+                                            Command="{Binding Source={x:Reference CameraCapturePage}, Path=BindingContext.MovePageLeftCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="1"
+                                            Text="→"
+                                            FontSize="12"
+                                            HeightRequest="32"
+                                            WidthRequest="32"
+                                            Padding="0"
+                                            CornerRadius="8"
+                                            BackgroundColor="{DynamicResource Background}"
+                                            TextColor="{DynamicResource Gray900}"
+                                            Command="{Binding Source={x:Reference CameraCapturePage}, Path=BindingContext.MovePageRightCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="2"
+                                            Text="Remove"
+                                            FontSize="12"
+                                            HeightRequest="32"
+                                            CornerRadius="8"
+                                            BackgroundColor="#FEE2E2"
+                                            TextColor="#991B1B"
+                                            Command="{Binding Source={x:Reference CameraCapturePage}, Path=BindingContext.RemovePageCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

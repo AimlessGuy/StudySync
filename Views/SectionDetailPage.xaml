@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:StudySync.ViewModels"
+             xmlns:models="clr-namespace:StudySync.Models"
+             x:Name="SectionDetailPageRoot"
+             x:Class="StudySync.Views.SectionDetailPage"
+             x:DataType="viewModels:SectionDetailViewModel"
+             Title="{Binding SectionName}"
+             BackgroundColor="{DynamicResource Background}">
+
+    <Grid RowDefinitions="Auto,Auto,*"
+          Padding="16"
+          RowSpacing="14">
+
+        <Border Grid.Row="0"
+                Style="{StaticResource HeroBorderStyle}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="24" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{Binding SectionName}"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{DynamicResource Gray100}" />
+                <Label Text="{Binding PostCount, StringFormat='{0} shared posts in this section'}"
+                       TextColor="{DynamicResource Gray300}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Grid.Row="1"
+                Style="{StaticResource CardBorderStyle}"
+                Padding="14">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Subject"
+                       Style="{StaticResource MetaLabel}" />
+                <Picker Title="All subjects"
+                        ItemsSource="{Binding SubjectFilters}"
+                        SelectedItem="{Binding SelectedSubjectFilter}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Posts}"
+                        Margin="0,2,0,0"
+                        SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Border Style="{StaticResource CardBorderStyle}"
+                        Padding="26">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="8">
+                        <Label Text="No shared posts yet"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               TextColor="{DynamicResource Gray100}" />
+                        <Label Text="Share a note to this section and it will appear here."
+                               HorizontalTextAlignment="Center"
+                               TextColor="{DynamicResource Gray400}" />
+                    </VerticalStackLayout>
+                </Border>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:SectionPost">
+                    <Border Margin="0,0,0,12"
+                            Style="{StaticResource CardBorderStyle}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="22" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer x:DataType="{x:Null}"
+                                                  Command="{Binding Source={x:Reference SectionDetailPageRoot}, Path=BindingContext.OpenPostCommand}"
+                                                  CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              ColumnDefinitions="*,Auto"
+                              RowSpacing="8">
+                            <Label Text="{Binding DisplayTitle}"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   TextColor="{DynamicResource Gray100}" />
+
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="8"
+                                                   HorizontalOptions="End"
+                                                   VerticalOptions="Start">
+                                <Label Text="{Binding TimeDisplay}"
+                                       Style="{StaticResource MetaLabel}"
+                                       VerticalOptions="Center" />
+                                <Button x:DataType="{x:Null}"
+                                        Text="⋮"
+                                        Command="{Binding Source={x:Reference SectionDetailPageRoot}, Path=BindingContext.ShowPostActionsCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        FontSize="18"
+                                        Padding="10,4"
+                                        MinimumHeightRequest="34"
+                                        MinimumWidthRequest="34" />
+                            </HorizontalStackLayout>
+
+                            <Label Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding PosterDisplayName}"
+                                   Style="{StaticResource MetaLabel}" />
+
+                            <Label Grid.Row="2"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding PreviewText}"
+                                   FontSize="14"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="3"
+                                   TextColor="{DynamicResource Gray200}" />
+
+                            <HorizontalStackLayout Grid.Row="3"
+                                                   Grid.ColumnSpan="2"
+                                                   BindableLayout.ItemsSource="{Binding SecondaryTags}"
+                                                   Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border BackgroundColor="{DynamicResource SurfaceMuted}"
+                                                Padding="10,6"
+                                                StrokeThickness="0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="14" />
+                                            </Border.StrokeShape>
+                                            <Label Text="{Binding .}"
+                                                   Style="{StaticResource ChipLabel}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
+
+                            <Grid Grid.Row="4"
+                                  Grid.ColumnSpan="2"
+                                  ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="10">
+                                <Button x:DataType="{x:Null}"
+                                        Text="{Binding UpvoteButtonText}"
+                                        Command="{Binding Source={x:Reference SectionDetailPageRoot}, Path=BindingContext.UpvotePostCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        FontSize="12"
+                                        Padding="12,6">
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding HasUpvoted}"
+                                                     Value="True">
+                                            <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                                <Label Grid.Column="1"
+                                       Text="{Binding PrimarySubjectTag}"
+                                       Style="{StaticResource MetaLabel}"
+                                       VerticalOptions="Center" />
+                                <Border Grid.Column="2"
+                                        BackgroundColor="{DynamicResource AccentGlow}"
+                                        IsVisible="{Binding IsAnonymous}"
+                                        Padding="10,6"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Center">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="14" />
+                                    </Border.StrokeShape>
+                                    <Label Text="Anonymous"
+                                           Style="{StaticResource ChipLabel}" />
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

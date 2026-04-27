@@ -6,12 +6,13 @@
 
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="Primary">#7B61FF</Color>
+    <Color x:Key="PrimaryDark">#A08BFF</Color>
+    <Color x:Key="PrimaryDarkText">#F8F6FF</Color>
+    <Color x:Key="Secondary">#2B2247</Color>
+    <Color x:Key="SecondaryDarkText">#DDD3FF</Color>
+    <Color x:Key="Tertiary">#B08CFF</Color>
+    <Color x:Key="AccentGlow">#20153A</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
@@ -19,18 +20,20 @@
     <Color x:Key="MidnightBlue">#190649</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
-    <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
-    <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
-    <Color x:Key="Gray600">#404040</Color>
-    <Color x:Key="Gray900">#212121</Color>
-    <Color x:Key="Gray950">#141414</Color>
-    <Color x:Key="Background">#F6F7FB</Color>
-    <Color x:Key="Surface">#FFFFFF</Color>
-    <Color x:Key="SurfaceMuted">#EEF1F7</Color>
-    <Color x:Key="SurfaceBorder">#D9DFEA</Color>
+    <Color x:Key="Gray100">#F7F4FF</Color>
+    <Color x:Key="Gray200">#DED7F7</Color>
+    <Color x:Key="Gray300">#BFB5E0</Color>
+    <Color x:Key="Gray400">#988DB9</Color>
+    <Color x:Key="Gray500">#7B719B</Color>
+    <Color x:Key="Gray600">#5E547A</Color>
+    <Color x:Key="Gray900">#F5F2FF</Color>
+    <Color x:Key="Gray950">#090611</Color>
+    <Color x:Key="Background">#080511</Color>
+    <Color x:Key="Surface">#141020</Color>
+    <Color x:Key="SurfaceMuted">#1E1830</Color>
+    <Color x:Key="SurfaceRaised">#251D3D</Color>
+    <Color x:Key="SurfaceSoft">#120D1D</Color>
+    <Color x:Key="SurfaceBorder">#3A2F59</Color>
     <Color x:Key="Danger">#C62828</Color>
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
@@ -50,5 +53,8 @@
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Background}"/>
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
     <SolidColorBrush x:Key="SurfaceMutedBrush" Color="{StaticResource SurfaceMuted}"/>
+    <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="{StaticResource SurfaceRaised}"/>
+    <SolidColorBrush x:Key="SurfaceSoftBrush" Color="{StaticResource SurfaceSoft}"/>
     <SolidColorBrush x:Key="SurfaceBorderBrush" Color="{StaticResource SurfaceBorder}"/>
+    <SolidColorBrush x:Key="AccentGlowBrush" Color="{StaticResource AccentGlow}"/>
 </ResourceDictionary>

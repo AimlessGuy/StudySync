@@ -25,6 +25,13 @@
                        Margin="10" />
             </Border>
 
+            <Label Text="{Binding PageSummaryText}"
+                   HorizontalOptions="Center"
+                   FontSize="13"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource Gray700}"
+                   IsVisible="{Binding HasMultiplePages}" />
+
             <VerticalStackLayout Spacing="6"
                                  IsVisible="{Binding IsProcessing}">
                 <Label Text="{Binding OcrStatus}"
@@ -56,14 +63,82 @@
                            FontSize="18"
                            FontAttributes="Bold" />
 
-                    <Label Text="Primary subject"
+                    <Border BackgroundColor="#FEF3C7"
+                            StrokeThickness="0"
+                            Padding="12"
+                            IsVisible="{Binding HasOcrWarning}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Label Text="{Binding OcrWarning}"
+                               FontSize="12"
+                               TextColor="#92400E" />
+                    </Border>
+
+                    <Border BackgroundColor="{Binding OcrConfidenceBackgroundColor}"
+                            StrokeThickness="0"
+                            Padding="12"
+                            IsVisible="{Binding HasOcrConfidence}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding OcrConfidenceLabel}"
+                                       FontAttributes="Bold"
+                                       TextColor="{Binding OcrConfidenceAccentColor}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding OcrConfidencePercent}"
+                                       FontAttributes="Bold"
+                                       TextColor="{Binding OcrConfidenceAccentColor}" />
+                            </Grid>
+                            <Label Text="{Binding OcrConfidenceSummary}"
+                                   FontSize="12"
+                                   TextColor="{Binding OcrConfidenceAccentColor}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="Send to section"
                            FontSize="14"
                            TextColor="{DynamicResource Gray900}"
                            FontAttributes="Bold" />
-                    <Picker Title="Choose one subject"
+                    <Picker Title="Choose a section first"
+                            ItemsSource="{Binding JoinedSections}"
+                            SelectedItem="{Binding SelectedSection}"
+                            ItemDisplayBinding="{Binding Name}"
+                            IsEnabled="{Binding IsTextExtracted}"
+                            IsVisible="{Binding HasJoinedSections}" />
+
+                    <Label Text="Join a section first if you want to post this note to classmates."
+                           FontSize="12"
+                           TextColor="{DynamicResource Gray500}"
+                           IsVisible="{Binding HasNoJoinedSections}" />
+
+                    <Label Text="Note title"
+                           FontSize="14"
+                           TextColor="{DynamicResource Gray900}"
+                           FontAttributes="Bold" />
+                    <Entry Text="{Binding NoteTitle}"
+                           Placeholder="Give this note a title"
+                           IsEnabled="{Binding IsTextExtracted}" />
+
+                    <Label Text="Primary tag"
+                           FontSize="14"
+                           TextColor="{DynamicResource Gray900}"
+                           FontAttributes="Bold" />
+                    <Picker Title="Choose an existing primary tag from this section"
                             ItemsSource="{Binding PrimarySubjectTags}"
                             SelectedItem="{Binding SelectedPrimarySubjectTag}"
-                            IsEnabled="{Binding IsTextExtracted}" />
+                            IsEnabled="{Binding IsTextExtracted}"
+                            IsVisible="{Binding HasSuggestedPrimaryTags}" />
+
+                    <Entry Text="{Binding PrimarySubjectTagInput}"
+                           Placeholder="Or create a new primary tag"
+                           IsEnabled="{Binding IsTextExtracted}" />
+
+                    <Label Text="Suggested primary tags now reflect only the section you chose above. You can still type a new one if needed."
+                           FontSize="12"
+                           TextColor="{DynamicResource Gray500}" />
 
                     <Label Text="Secondary tags"
                            FontSize="14"
@@ -72,48 +147,6 @@
                     <Entry Text="{Binding SecondaryTagsInput}"
                            Placeholder="Add your own tags, separated by commas"
                            IsEnabled="{Binding IsTextExtracted}" />
-
-                    <Label Text="Share to sections"
-                           FontSize="14"
-                           TextColor="{DynamicResource Gray900}"
-                           FontAttributes="Bold" />
-
-                    <CollectionView ItemsSource="{Binding JoinedSections}"
-                                    SelectionMode="None"
-                                    HeightRequest="170"
-                                    IsVisible="{Binding HasJoinedSections}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:SelectableSection">
-                                <Border BackgroundColor="{DynamicResource SurfaceMuted}"
-                                        StrokeThickness="0"
-                                        Padding="12"
-                                        Margin="0,0,0,8">
-                                    <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="10" />
-                                    </Border.StrokeShape>
-                                    <Grid ColumnDefinitions="Auto,*"
-                                          ColumnSpacing="10">
-                                        <CheckBox IsChecked="{Binding IsSelected}"
-                                                  VerticalOptions="Center" />
-                                        <VerticalStackLayout Grid.Column="1"
-                                                             Spacing="2">
-                                            <Label Text="{Binding Name}"
-                                                   FontAttributes="Bold"
-                                                   TextColor="{DynamicResource Gray900}" />
-                                            <Label Text="{Binding InviteCode, StringFormat='Invite code: {0}'}"
-                                                   FontSize="12"
-                                                   TextColor="{DynamicResource Gray500}" />
-                                        </VerticalStackLayout>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-
-                    <Label Text="Join a section first if you want to post this note to classmates."
-                           FontSize="12"
-                           TextColor="{DynamicResource Gray500}"
-                           IsVisible="{Binding HasNoJoinedSections}" />
 
                     <Label Text="Extracted text"
                            FontSize="14"
@@ -131,22 +164,12 @@
 
         <VerticalStackLayout Grid.Row="2"
                              Spacing="8">
-            <Grid ColumnDefinitions="*,*"
-                  ColumnSpacing="8"
-                  IsEnabled="{Binding IsTextExtracted}">
-                <Button Grid.Column="0"
-                        Text="Save to Vault"
-                        Command="{Binding SaveNoteCommand}"
-                        BackgroundColor="{DynamicResource Primary}"
-                        TextColor="White"
-                        CornerRadius="8" />
-                <Button Grid.Column="1"
-                        Text="Share"
-                        Command="{Binding ShareNoteCommand}"
-                        BackgroundColor="{DynamicResource Secondary}"
-                        TextColor="{DynamicResource Gray900}"
-                        CornerRadius="8" />
-            </Grid>
+            <Button Text="Share to Section"
+                    Command="{Binding ShareNoteCommand}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="White"
+                    CornerRadius="8"
+                    IsEnabled="{Binding IsTextExtracted}" />
 
             <Button Text="Process Again"
                     Command="{Binding ProcessAgainCommand}"

@@ -10,23 +10,47 @@ public sealed class SectionCloudService
     private const string DeviceIdPreferenceKey = "studysync_device_id";
 
     private readonly IFirebaseFirestore _firestore;
+    private readonly AuthService _authService;
 
     public SectionCloudService()
     {
         _firestore = CrossFirebaseFirestore.Current;
+        _authService = new AuthService();
     }
 
     public async Task<List<Section>> GetJoinedSectionsAsync()
     {
+        var session = await _authService.GetCurrentSessionAsync();
+        var userId = session?.LocalId ?? string.Empty;
+        var deviceId = GetDeviceId();
+
         var snapshot = await _firestore
             .GetCollection(CollectionName)
-            .WhereArrayContains("member_ids", GetDeviceId())
             .GetDocumentsAsync<SectionDocument>(Source.Default);
 
-        return snapshot.Documents
+        var documents = snapshot.Documents
             .Select(document => document.Data)
             .Where(document => document != null)
-            .Select(ToSection)
+            .Where(document =>
+                (!string.IsNullOrWhiteSpace(userId) &&
+                 document.MemberUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase)) ||
+                document.MemberIds.Contains(deviceId, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            foreach (var document in documents.Where(document =>
+                         !document.MemberUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase) &&
+                         document.MemberIds.Contains(deviceId, StringComparer.OrdinalIgnoreCase)))
+            {
+                var reference = _firestore.GetCollection(CollectionName).GetDocument(document.Id);
+                await reference.UpdateDataAsync(("member_user_ids", FieldValue.ArrayUnion(userId)));
+                document.MemberUserIds.Add(userId);
+            }
+        }
+
+        return documents
+            .Select(document => ToSection(document, userId, deviceId))
             .OrderBy(section => section.Name)
             .ToList();
     }
@@ -34,6 +58,8 @@ public sealed class SectionCloudService
     public async Task<Section> CreateSectionAsync(string name, string inviteCode)
     {
         var deviceId = GetDeviceId();
+        var session = await _authService.GetCurrentSessionAsync();
+        var userId = session?.LocalId ?? string.Empty;
         var now = DateTimeOffset.UtcNow;
 
         var document = new SectionDocument
@@ -42,14 +68,18 @@ public sealed class SectionCloudService
             InviteCode = inviteCode,
             CreatedAt = now,
             CreatorDeviceId = deviceId,
-            MemberIds = new List<string> { deviceId }
+            CreatorUserId = userId,
+            MemberIds = new List<string> { deviceId },
+            MemberUserIds = string.IsNullOrWhiteSpace(userId)
+                ? new List<string>()
+                : new List<string> { userId }
         };
 
         var reference = _firestore.GetCollection(CollectionName).CreateDocument();
         await reference.SetDataAsync(document);
 
         document.Id = reference.Id;
-        return ToSection(document);
+        return ToSection(document, userId, deviceId);
     }
 
     public async Task<Section?> JoinSectionByCodeAsync(string inviteCode)
@@ -70,14 +100,24 @@ public sealed class SectionCloudService
             return null;
 
         var deviceId = GetDeviceId();
+        var session = await _authService.GetCurrentSessionAsync();
+        var userId = session?.LocalId ?? string.Empty;
+        var reference = _firestore.GetCollection(CollectionName).GetDocument(document.Id);
+
         if (!document.MemberIds.Contains(deviceId, StringComparer.OrdinalIgnoreCase))
         {
-            var reference = _firestore.GetCollection(CollectionName).GetDocument(document.Id);
             await reference.UpdateDataAsync(("member_ids", FieldValue.ArrayUnion(deviceId)));
             document.MemberIds.Add(deviceId);
         }
 
-        return ToSection(document);
+        if (!string.IsNullOrWhiteSpace(userId) &&
+            !document.MemberUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase))
+        {
+            await reference.UpdateDataAsync(("member_user_ids", FieldValue.ArrayUnion(userId)));
+            document.MemberUserIds.Add(userId);
+        }
+
+        return ToSection(document, userId, deviceId);
     }
 
     public async Task<bool> InviteCodeExistsAsync(string inviteCode)
@@ -93,15 +133,51 @@ public sealed class SectionCloudService
         return !snapshot.IsEmpty;
     }
 
-    private static Section ToSection(SectionDocument document)
+    public async Task LeaveSectionAsync(string inviteCode)
     {
+        if (string.IsNullOrWhiteSpace(inviteCode))
+            throw new InvalidOperationException("A section code is required.");
+
+        var normalizedCode = inviteCode.Trim().ToUpperInvariant();
+        var snapshot = await _firestore
+            .GetCollection(CollectionName)
+            .WhereEqualsTo("invite_code", normalizedCode)
+            .LimitedTo(1)
+            .GetDocumentsAsync<SectionDocument>(Source.Default);
+
+        var document = snapshot.Documents
+            .Select(result => result.Data)
+            .FirstOrDefault(result => result != null);
+
+        if (document == null)
+            return;
+
         var deviceId = GetDeviceId();
+        var session = await _authService.GetCurrentSessionAsync();
+        var userId = session?.LocalId ?? string.Empty;
+        var reference = _firestore.GetCollection(CollectionName).GetDocument(document.Id);
+
+        if (document.MemberIds.Contains(deviceId, StringComparer.OrdinalIgnoreCase))
+            await reference.UpdateDataAsync(("member_ids", FieldValue.ArrayRemove(deviceId)));
+
+        if (!string.IsNullOrWhiteSpace(userId) &&
+            document.MemberUserIds.Contains(userId, StringComparer.OrdinalIgnoreCase))
+        {
+            await reference.UpdateDataAsync(("member_user_ids", FieldValue.ArrayRemove(userId)));
+        }
+    }
+
+    private static Section ToSection(SectionDocument document, string userId, string deviceId)
+    {
         return new Section
         {
             Name = document.Name,
             InviteCode = document.InviteCode,
             CreatedAt = document.CreatedAt.LocalDateTime,
-            IsCreator = string.Equals(document.CreatorDeviceId, deviceId, StringComparison.OrdinalIgnoreCase)
+            IsCreator =
+                (!string.IsNullOrWhiteSpace(userId) &&
+                 string.Equals(document.CreatorUserId, userId, StringComparison.OrdinalIgnoreCase)) ||
+                string.Equals(document.CreatorDeviceId, deviceId, StringComparison.OrdinalIgnoreCase)
         };
     }
 
@@ -133,7 +209,13 @@ public sealed class SectionCloudService
         [FirestoreProperty("creator_device_id")]
         public string CreatorDeviceId { get; set; } = string.Empty;
 
+        [FirestoreProperty("creator_user_id")]
+        public string CreatorUserId { get; set; } = string.Empty;
+
         [FirestoreProperty("member_ids")]
         public IList<string> MemberIds { get; set; } = new List<string>();
+
+        [FirestoreProperty("member_user_ids")]
+        public IList<string> MemberUserIds { get; set; } = new List<string>();
     }
 }

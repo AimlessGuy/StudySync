@@ -101,6 +101,11 @@
                                 <Border.StrokeShape>
                                     <RoundRectangle CornerRadius="12" />
                                 </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer x:DataType="{x:Null}"
+                                                          Command="{Binding Source={x:Reference SectionsPageRoot}, Path=BindingContext.OpenSectionCommand}"
+                                                          CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
                                 <VerticalStackLayout Spacing="8">
                                     <HorizontalStackLayout Spacing="8">
                                         <Label Text="{Binding Name}"
@@ -117,15 +122,19 @@
                                            TextColor="{DynamicResource Gray600}"
                                            FontSize="13" />
 
-                                    <Grid ColumnDefinitions="*,*"
+                                    <Label Text="Tap to view this section's posts"
+                                           TextColor="{DynamicResource Gray500}"
+                                           FontSize="12" />
+
+                                    <Grid ColumnDefinitions="*,*,Auto"
                                           ColumnSpacing="8">
                                         <Button Grid.Column="0"
                                                 x:DataType="{x:Null}"
                                                 Text="Copy Code"
                                                 Command="{Binding Source={x:Reference SectionsPageRoot}, Path=BindingContext.CopyInviteCodeCommand}"
                                                 CommandParameter="{Binding .}"
-                                                BackgroundColor="{DynamicResource Gray100}"
-                                                TextColor="{DynamicResource Gray900}" />
+                                                BackgroundColor="{DynamicResource SurfaceMuted}"
+                                                TextColor="{DynamicResource Gray100}" />
                                         <Button Grid.Column="1"
                                                 x:DataType="{x:Null}"
                                                 Text="Share Invite"
@@ -133,6 +142,15 @@
                                                 CommandParameter="{Binding .}"
                                                 BackgroundColor="{DynamicResource Secondary}"
                                                 TextColor="{DynamicResource Gray900}" />
+                                        <Button Grid.Column="2"
+                                                x:DataType="{x:Null}"
+                                                Text="⋮"
+                                                FontSize="20"
+                                                Padding="14,0"
+                                                Command="{Binding Source={x:Reference SectionsPageRoot}, Path=BindingContext.ShowSectionActionsCommand}"
+                                                CommandParameter="{Binding .}"
+                                                BackgroundColor="{DynamicResource SurfaceMuted}"
+                                                TextColor="{DynamicResource Gray100}" />
                                     </Grid>
                                 </VerticalStackLayout>
                             </Border>

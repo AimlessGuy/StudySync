@@ -1,5 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
 using StudySync.ViewModels;
-using StudySync.Services;
 
 namespace StudySync.Views;
 
@@ -8,8 +8,7 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
-        // Create MainViewModel directly with a new DatabaseService
-        BindingContext = new MainViewModel(new DatabaseService());
+        BindingContext = ((App)Application.Current!).Services.GetRequiredService<MainViewModel>();
         Loaded += OnLoaded;
     }
 
